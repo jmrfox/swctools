@@ -18,7 +18,7 @@ Notes
 
 Example
 -------
->>> from swcviz.io import parse_swc
+>>> from swctools.io import parse_swc
 >>> result = parse_swc("data/example.swc")
 >>> len(result.records) > 0
 True

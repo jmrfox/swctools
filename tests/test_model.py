@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from swcviz import parse_swc, SWCParseResult, SWCRecord, SWCModel, GeneralModel
+from swctools import parse_swc, SWCParseResult, SWCRecord, SWCModel, GeneralModel
 
 
 def test_build_from_parse_result_basic():

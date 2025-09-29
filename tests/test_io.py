@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-from swcviz import parse_swc, SWCParseResult
+from swctools import parse_swc, SWCParseResult
 
 
 def test_parse_basic_from_string():

@@ -1,4 +1,4 @@
-"""Visualization helpers for swcviz.
+"""Visualization helpers for swctools.
 
 - plot_centroid: skeleton plotting from GeneralModel using Scatter3d
 - plot_frusta: volumetric frusta plotting from FrustaSet using Mesh3d

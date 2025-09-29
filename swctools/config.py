@@ -1,4 +1,4 @@
-"""Global visualization configuration for swcviz Plotly figures.
+"""Global visualization configuration for swctools Plotly figures.
 
 Use `set_config(...)` to override defaults in notebooks/apps, and
 `apply_layout(fig, title=...)` to apply them to a Plotly Figure.

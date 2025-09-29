@@ -1,13 +1,13 @@
 # Visualization
 
-This page summarizes the primary visualization entry points and options.
+This page summarizes the visualization entry points and options. Visualization is one part of the broader `swctools` toolbox for SWC parsing, modeling, analysis, and geometry.
 
 ## Global configuration
 
 Use `set_config(...)` to set defaults for all figures:
 
 ```python
-from swcviz import set_config
+from swctools import set_config
 set_config(width=800, height=600, force_equal_axes=True, template="plotly_white")
 ```
 
@@ -17,7 +17,7 @@ set_config(width=800, height=600, force_equal_axes=True, template="plotly_white"
 ## Centroid (skeleton)
 
 ```python
-from swcviz import plot_centroid
+from swctools import plot_centroid
 fig = plot_centroid(gm, show_nodes=True)
 fig.show()
 ```
@@ -25,7 +25,7 @@ fig.show()
 ## Volumetric frusta
 
 ```python
-from swcviz import plot_frusta, FrustaSet
+from swctools import plot_frusta, FrustaSet
 fr = FrustaSet.from_general_model(gm, sides=16, end_caps=False)
 fig = plot_frusta(fr, radius_scale=0.8)
 fig.show()
@@ -34,7 +34,7 @@ fig.show()
 ## Overlay centroid + frusta
 
 ```python
-from swcviz import plot_frusta_with_centroid
+from swctools import plot_frusta_with_centroid
 fig = plot_frusta_with_centroid(gm, fr, radius_scale=1.0)
 fig.show()
 ```
@@ -42,7 +42,7 @@ fig.show()
 ## Master function: plot_model
 
 ```python
-from swcviz import plot_model
+from swctools import plot_model
 
 fig = plot_model(
     gm=gm,
@@ -71,7 +71,7 @@ fig.show()
 ## Overlay arbitrary points as spheres (PointSet)
 
 ```python
-from swcviz import PointSet
+from swctools import PointSet
 
 # Build from a list of xyz points
 ps = PointSet.from_points([(0, 0, 0), (3, 0, 0)], base_radius=0.05)

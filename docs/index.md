@@ -1,6 +1,6 @@
-# swcviz
+# swctools
 
-Jupyter-first 3D visualization of SWC neuronal morphologies using NetworkX and Plotly.
+Jupyter-first toolbox for SWC parsing, modeling, analysis, geometry, and 3D visualization (NetworkX, NumPy, Plotly).
 
 - Parse SWC into directed `SWCModel` and undirected `GeneralModel`
 - Visualize skeletons (centroid) with `plot_centroid`
@@ -9,7 +9,7 @@ Jupyter-first 3D visualization of SWC neuronal morphologies using NetworkX and P
 ## Quick start
 
 ```python
-from swcviz import parse_swc, GeneralModel, FrustaSet, PointSet, plot_model, set_config
+from swctools import parse_swc, GeneralModel, FrustaSet, PointSet, plot_model, set_config
 
 # Optional: global viz settings (equal axes enforced by default)
 set_config(width=800, height=600)

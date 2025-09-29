@@ -1023,7 +1023,7 @@ wheels = [
 ]
 
 [[package]]
-name = "swcviz"
+name = "swctools"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

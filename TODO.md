@@ -1,6 +1,6 @@
-# swcviz TODO and roadmap
+# swctools TODO and roadmap
 
-This document tracks the plan for building `swcviz`, a Python library for 3D visualization of neuronal morphologies in SWC format, optimized for Jupyter with Plotly and a graph-based core using NetworkX.
+This document tracks the plan for building `swctools`, a Python toolbox for SWC parsing, modeling, analysis, geometry, and visualization. It is optimized for Jupyter workflows, with a graph-based core using NetworkX, computational geometry with NumPy, and interactive 3D via Plotly.
 
 Status: planning. No public API is stable yet.
 
@@ -21,7 +21,7 @@ Status: planning. No public API is stable yet.
 ### M1 — Project scaffolding
 
 - [x] Decide initial package layout (initial modules in place)
-  - `swcviz/` package with modules:
+  - `swctools/` package with modules:
     - [x] `io.py` (SWC reader/validator: `parse_swc`, `SWCRecord`, `SWCParseResult`)
     - [x] `model.py` (`SWCModel` DiGraph; `GeneralModel` Graph; `_graph_attributes`; `print_attributes`)
     - [x] `geometry.py` (`Segment` frustum construction, `PointSet` spheres, helper math)
@@ -31,7 +31,7 @@ Status: planning. No public API is stable yet.
   - `data/` sample SWC files (small, clearly licensed)
   - `notebooks/` examples for Jupyter (user-authored; do not auto-create notebooks)
   - `tests/` unit tests
-- [ ] Initialize packaging with `pyproject.toml`
+- [x] Initialize packaging with `pyproject.toml`
   - Core deps: `networkx`, `plotly`, `numpy`
   - Nice-to-have: `pandas` (tabular ops), `scipy` (optional geometry)
   - Dev deps: `pytest`, `ruff`, `black`, `mypy` (optional)

@@ -1,4 +1,4 @@
-from swcviz import Segment, frustum_mesh, batch_frusta, FrustaSet, GeneralModel
+from swctools import Segment, frustum_mesh, batch_frusta, FrustaSet, GeneralModel
 
 
 def test_single_frustum_mesh_counts():

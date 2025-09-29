@@ -1,10 +1,10 @@
-# swcviz — 3D Visualization of SWC Neuronal Morphologies
+# swctools — SWC parsing, modeling, analysis, geometry, and visualization
 
-swcviz is a Python package for loading, analyzing, and visualizing neuronal morphologies stored in the SWC format. It is designed for interactive use in Jupyter notebooks and leverages Plotly for 3D visualization and NetworkX for graph-based topology.
+swctools is a Python toolbox for loading, parsing, modeling, analyzing, and visualizing neuronal morphologies stored in the SWC format. It is designed for interactive use in Jupyter notebooks and provides a graph-based core (NetworkX), computational geometry utilities (NumPy), and interactive 3D visualization (Plotly).
 
 Status: pre-alpha, actively evolving. Core parsing, models, geometry, and basic visualization are implemented.
 
-Docs: [https://jmrfox.github.io/swcviz/](https://jmrfox.github.io/swcviz/)
+Docs: [https://jmrfox.github.io/swctools/](https://jmrfox.github.io/swctools/)
 
 Demo notebooks can be found in the `notebooks` directory.
 
@@ -26,7 +26,7 @@ Demo notebooks can be found in the `notebooks` directory.
   - `plot_frusta_slider(frusta, min_scale, max_scale, steps)` interactive radius scale slider
   - `plot_model(...)` master entry point combining centroid, frusta, slider, and `PointSet` overlays
   - Global config via `set_config(...)` (equal axes enforced by default, width/height, template)
-- Roadmap: time-varying scalars and animations
+- Roadmap: morphometrics and analyses, I/O conversions, time-varying scalars and animations
 
 ## Design overview
 
@@ -41,13 +41,13 @@ Demo notebooks can be found in the `notebooks` directory.
 - Visualization functions in `viz.py`: `plot_centroid`, `plot_frusta`, `plot_frusta_with_centroid`, `plot_frusta_slider`, `plot_model`
 
 - Use in Jupyter:
-  - Launch a notebook and import `swcviz`
+  - Launch a notebook and import `swctools`
   - Load or paste an SWC and use `GeneralModel`, `FrustaSet`, `plot_centroid`, `plot_frusta`
 
 ## Configuration (Plotly)
 
 ```python
-from swcviz import set_config
+from swctools import set_config
 
 # Enforce equal x/y/z scale globally (default True) and size
 set_config(force_equal_axes=True, width=800, height=600)

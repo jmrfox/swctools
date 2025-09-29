@@ -2,7 +2,7 @@
 
 ## Public API
 
-::: swcviz
+::: swctools
     handler: python
     options:
       members_order: source

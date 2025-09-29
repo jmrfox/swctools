@@ -1,6 +1,6 @@
 # Installation
 
-This page describes how to install swcviz from GitHub and how to set up a development environment.
+This page describes how to install swctools from GitHub and how to set up a development environment.
 
 ## Requirements
 
@@ -10,7 +10,7 @@ This page describes how to install swcviz from GitHub and how to set up a develo
 ## Install from GitHub (latest main)
 
 ```bash
-pip install "git+https://github.com/jmrfox/swcviz.git"
+pip install "git+https://github.com/jmrfox/swctools.git"
 ```
 
 ## Development setup with uv
@@ -35,17 +35,17 @@ If you plan to use notebooks, ensure a kernel is available in your env. One opti
 
 ```bash
 pip install ipykernel
-python -m ipykernel install --user --name swcviz --display-name "Python (swcviz)"
+python -m ipykernel install --user --name swctools --display-name "Python (swctools)"
 ```
 
 Then in a notebook:
 
 ```python
-from swcviz import parse_swc, GeneralModel, FrustaSet, plot_centroid, plot_frusta
+from swctools import parse_swc, GeneralModel, FrustaSet, plot_centroid, plot_frusta
 ```
 
 ## Uninstall
 
 ```bash
-pip uninstall swcviz
+pip uninstall swctools
 ```

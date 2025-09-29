@@ -1,6 +1,6 @@
-"""swcviz package scaffolding.
+"""swctools package scaffolding.
 
-Public API is evolving; currently exposes SWC parsing utilities and models.
+Public API is evolving; currently exposes SWC parsing, models, geometry, and visualization utilities.
 """
 
 from .io import SWCRecord, SWCParseResult, parse_swc
