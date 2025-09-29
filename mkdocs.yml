@@ -1,0 +1,25 @@
+site_name: swcviz
+site_description: Jupyter-first 3D visualization of SWC neuronal morphologies
+repo_url: https://github.com/jmrfox/swcviz
+site_url: https://jmrfox.github.io/swcviz/
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+
+nav:
+  - Home: index.md
+  - Visualization: visualization.md
+  - Installation: install.md
+  - API: api.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.details

@@ -1,0 +1,59 @@
+[project]
+name = "swcviz"
+version = "0.1.0"
+description = "Jupyter-first 3D visualization of SWC neuronal morphologies using NetworkX and Plotly."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Jordan M. R. Fox", email = "jordanmrfox@gmail.com" }
+]
+keywords = ["SWC", "neuroscience", "visualization", "plotly", "networkx", "3D"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+    "networkx>=3.5",
+    "numpy>=2.3.3",
+    "plotly>=6.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jmrfox/swcviz"
+"Bug Tracker" = "https://github.com/jmrfox/swcviz/issues"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+ 
+
+[tool.hatch.build]
+include = [
+    "swcviz/**",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["swcviz"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.2",
+    "ruff>=0.6.9",
+    "black>=24.10.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.49",
+    "mkdocstrings[python]>=0.27.0",
+    "pymdown-extensions>=10.11.2",
+]
