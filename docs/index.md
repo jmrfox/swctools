@@ -38,3 +38,9 @@ fig_slider.show()
 ```
 
 See the Visualization and API reference pages for details.
+
+## Explore the docs
+
+- **Visualization**: [Visualization](visualization.md)
+- **Installation**: [Installation](install.md)
+- **API Reference**: [API](api.md)
