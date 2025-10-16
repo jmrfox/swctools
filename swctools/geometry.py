@@ -437,6 +437,147 @@ class PointSet:
 # --------------------------------------------------------------------------------------
 # Frusta set derived from a GeneralModel
 # --------------------------------------------------------------------------------------
+    def project_onto_frusta(self, frusta: "FrustaSet", include_end_caps: Optional[bool] = None) -> "PointSet":
+        """Project each point to the nearest surface of the nearest frustum.
+
+        Parameters
+        ----------
+        frusta: FrustaSet
+            Set of oriented frusta (as `Segment`s) to project onto.
+        include_end_caps: Optional[bool]
+            If None (default), follow `frusta.end_caps`. If True/False, explicitly
+            include or ignore projections to the circular end caps.
+
+        Returns
+        -------
+        PointSet
+            A new `PointSet` whose `points` have been moved onto the closest
+            surface points of the closest frusta; sphere mesh is rebuilt.
+
+        Notes
+        -----
+        For each input point, the algorithm iterates all frusta segments and
+        evaluates the squared distance to:
+        - The lateral surface: project the point to the segment axis (clamped
+          t in [0,1]), interpolate radius r(t), then move along the radial
+          direction to the mantle.
+        - The end caps (optional): orthogonal distance to each cap plane; if
+          the projected point falls outside the disk, distance to the rim is used.
+        Degenerate segments (zero length) are treated as a sphere of radius
+        max(ra, rb) centered at the endpoint.
+        Complexity is O(N_points × N_segments), implemented in pure Python.
+        """
+        # Resolve whether to include end-cap projections (explicit flag overrides frusta setting)
+        use_caps = frusta.end_caps if include_end_caps is None else include_end_caps
+        eps = 1e-12
+        # Accumulate the new, projected points in order
+        new_points: List[Point3] = []
+        # For each input point, search all frusta and keep the closest surface point
+        for p in self.points:
+            best_q: Optional[Point3] = None
+            best_d2 = float("inf")
+            # Check every frustum segment
+            for s in frusta.segments:
+                a = s.a
+                b = s.b
+                ra = s.ra
+                rb = s.rb
+                d = v_sub(b, a)
+                l2 = v_dot(d, d)
+                # Degenerate segment: treat as a sphere of radius max(ra, rb) at endpoint a
+                if l2 < eps:
+                    R = max(ra, rb)
+                    ap = v_sub(p, a)
+                    n = v_norm(ap)
+                    if n < eps:
+                        U, V, W = _orthonormal_frame((1.0, 0.0, 0.0))
+                        q = v_add(a, v_mul(U, R))
+                        d2 = R * R
+                    else:
+                        u = v_mul(ap, 1.0 / n)
+                        q = v_add(a, v_mul(u, R))
+                        d2 = (n - R) * (n - R)
+                    if d2 < best_d2:
+                        best_d2 = d2
+                        best_q = q
+                    continue
+                # Project point onto segment axis and clamp to [0, 1]
+                t = v_dot(v_sub(p, a), d) / l2
+                if t < 0.0:
+                    t_clamped = 0.0
+                elif t > 1.0:
+                    t_clamped = 1.0
+                else:
+                    t_clamped = t
+                # Local orthonormal frame with axis W along the segment direction
+                U, V, W = _orthonormal_frame(d)
+                c = v_add(a, v_mul(d, t_clamped))
+                nvec = v_sub(p, c)
+                nr = v_norm(nvec)
+                rt = ra + (rb - ra) * t_clamped
+                if nr < eps:
+                    normal_dir = U
+                else:
+                    normal_dir = v_mul(nvec, 1.0 / nr)
+                # Nearest point on the lateral surface (mantle)
+                q_lat = v_add(c, v_mul(normal_dir, rt))
+                dl = nr - rt
+                d2_lat = dl * dl
+                if d2_lat < best_d2:
+                    best_d2 = d2_lat
+                    best_q = q_lat
+                # Optionally consider projection to end caps (disks) and their rims
+                if use_caps:
+                    # Cap at endpoint a
+                    sa = v_dot(v_sub(p, a), W)
+                    pa = v_sub(v_sub(p, a), v_mul(W, sa))
+                    ra_len = v_norm(pa)
+                    if ra_len <= ra + eps:
+                        q_ca = v_add(a, pa)
+                        d2_ca = sa * sa
+                    else:
+                        if ra_len < eps:
+                            pa_dir = U
+                        else:
+                            pa_dir = v_mul(pa, 1.0 / ra_len)
+                        rim_a = v_add(a, v_mul(pa_dir, ra))
+                        diff_a = ra_len - ra
+                        d2_ca = sa * sa + diff_a * diff_a
+                        q_ca = rim_a
+                    if d2_ca < best_d2:
+                        best_d2 = d2_ca
+                        best_q = q_ca
+                    # Cap at endpoint b
+                    sb = v_dot(v_sub(p, b), W)
+                    pb = v_sub(v_sub(p, b), v_mul(W, sb))
+                    rb_len = v_norm(pb)
+                    if rb_len <= rb + eps:
+                        q_cb = v_add(b, pb)
+                        d2_cb = sb * sb
+                    else:
+                        if rb_len < eps:
+                            pb_dir = U
+                        else:
+                            pb_dir = v_mul(pb, 1.0 / rb_len)
+                        rim_b = v_add(b, v_mul(pb_dir, rb))
+                        diff_b = rb_len - rb
+                        d2_cb = sb * sb + diff_b * diff_b
+                        q_cb = rim_b
+                    if d2_cb < best_d2:
+                        best_d2 = d2_cb
+                        best_q = q_cb
+            # Accept the best (closest) candidate for this point
+            new_points.append(best_q if best_q is not None else p)
+        # Rebuild sphere mesh centered at the moved points
+        verts, faces = batch_spheres(new_points, radius=self.base_radius, stacks=self.stacks, slices=self.slices)
+        return PointSet(
+            vertices=verts,
+            faces=faces,
+            points=new_points,
+            base_radius=self.base_radius,
+            stacks=self.stacks,
+            slices=self.slices,
+        )
 
 
 @dataclass(frozen=True)
