@@ -228,14 +228,19 @@ class SWCModel(nx.DiGraph):
                 else:
                     print(f"  {u} -> {v}")
 
-    def scale(self, scalar: float) -> None:
-        """Scale all node coordinates and radii in-place by `scalar`.
+    def copy(self) -> "SWCModel":
+        """Return a shallow copy of this model (nodes/edges/attributes)."""
+        return super().copy(as_view=False)
 
-        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar`.
+    def scale(self, scalar: float) -> "SWCModel":
+        """Return a new model with all node coordinates and radii scaled by `scalar`.
+
+        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar` on a copy.
         """
         if not isinstance(scalar, (int, float)):
             raise TypeError("scalar must be a number")
-        for _, attrs in self.nodes(data=True):
+        new = self.copy()
+        for _, attrs in new.nodes(data=True):
             if "x" in attrs:
                 attrs["x"] *= scalar
             if "y" in attrs:
@@ -244,6 +249,7 @@ class SWCModel(nx.DiGraph):
                 attrs["z"] *= scalar
             if "r" in attrs:
                 attrs["r"] *= scalar
+        return new
 
 
 class GeneralModel(nx.Graph):
@@ -429,14 +435,19 @@ class GeneralModel(nx.Graph):
                 else:
                     print(f"  {u} -- {v}")
 
-    def scale(self, scalar: float) -> None:
-        """Scale all node coordinates and radii in-place by `scalar`.
+    def copy(self) -> "GeneralModel":
+        """Return a shallow copy of this model (nodes/edges/attributes)."""
+        return super().copy(as_view=False)
 
-        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar`.
+    def scale(self, scalar: float) -> "GeneralModel":
+        """Return a new model with all node coordinates and radii scaled by `scalar`.
+
+        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar` on a copy.
         """
         if not isinstance(scalar, (int, float)):
             raise TypeError("scalar must be a number")
-        for _, attrs in self.nodes(data=True):
+        new = self.copy()
+        for _, attrs in new.nodes(data=True):
             if "x" in attrs:
                 attrs["x"] *= scalar
             if "y" in attrs:
@@ -445,3 +456,4 @@ class GeneralModel(nx.Graph):
                 attrs["z"] *= scalar
             if "r" in attrs:
                 attrs["r"] *= scalar
+        return new

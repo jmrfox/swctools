@@ -98,6 +98,19 @@ class Segment:
             self.a[2] * 0.5 + self.b[2] * 0.5,
         )
 
+    def scale(self, scalar: float) -> "Segment":
+        """Return a new `Segment` uniformly scaled by `scalar` (positions and radii)."""
+        if not isinstance(scalar, (int, float)):
+            raise TypeError("scalar must be a number")
+        ax, ay, az = self.a
+        bx, by, bz = self.b
+        return Segment(
+            a=(ax * scalar, ay * scalar, az * scalar),
+            b=(bx * scalar, by * scalar, bz * scalar),
+            ra=self.ra * scalar,
+            rb=self.rb * scalar,
+        )
+
 
 # --------------------------------------------------------------------------------------
 # Frames and rings
@@ -445,6 +458,26 @@ class PointSet:
             slices=self.slices,
         )
 
+    def scale(self, scalar: float) -> "PointSet":
+        """Return a new `PointSet` with coordinates and radii scaled by `scalar`."""
+        if not isinstance(scalar, (int, float)):
+            raise TypeError("scalar must be a number")
+        if scalar == 1.0:
+            return self
+        new_points = [(p[0] * scalar, p[1] * scalar, p[2] * scalar) for p in self.points]
+        new_radius = self.base_radius * scalar
+        verts, faces = batch_spheres(
+            new_points, radius=new_radius, stacks=self.stacks, slices=self.slices
+        )
+        return PointSet(
+            vertices=verts,
+            faces=faces,
+            points=new_points,
+            base_radius=new_radius,
+            stacks=self.stacks,
+            slices=self.slices,
+        )
+
     # --------------------------------------------------------------------------------------
     # Frusta set derived from a GeneralModel
     # --------------------------------------------------------------------------------------
@@ -682,6 +715,35 @@ class FrustaSet:
             return self
         scaled_segments = [
             Segment(a=s.a, b=s.b, ra=s.ra * radius_scale, rb=s.rb * radius_scale)
+            for s in self.segments
+        ]
+        vertices, faces = batch_frusta(
+            scaled_segments, sides=self.sides, end_caps=self.end_caps
+        )
+        return FrustaSet(
+            vertices=vertices,
+            faces=faces,
+            sides=self.sides,
+            end_caps=self.end_caps,
+            segment_count=self.segment_count,
+            edge_count=self.edge_count,
+            segments=scaled_segments,
+            edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
+        )
+
+    def scale(self, scalar: float) -> "FrustaSet":
+        """Return a new `FrustaSet` with coordinates and radii scaled by `scalar`."""
+        if not isinstance(scalar, (int, float)):
+            raise TypeError("scalar must be a number")
+        if scalar == 1.0:
+            return self
+        scaled_segments = [
+            Segment(
+                a=(s.a[0] * scalar, s.a[1] * scalar, s.a[2] * scalar),
+                b=(s.b[0] * scalar, s.b[1] * scalar, s.b[2] * scalar),
+                ra=s.ra * scalar,
+                rb=s.rb * scalar,
+            )
             for s in self.segments
         ]
         vertices, faces = batch_frusta(
