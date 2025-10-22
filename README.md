@@ -25,6 +25,7 @@ Demo notebooks can be found in the `notebooks` directory.
   - `plot_frusta_with_centroid(gm, frusta, ...)` to overlay skeleton and mesh
   - `plot_frusta_slider(frusta, min_scale, max_scale, steps)` interactive radius scale slider
   - `plot_model(...)` master entry point combining centroid, frusta, slider, and `PointSet` overlays
+  - `plot_frusta_timeseries(frusta, values, ...)` animate time-dependent per-segment scalars V_i(t) with a slider and playback controls
   - Global config via `set_config(...)` (equal axes enforced by default, width/height, template)
 - Roadmap: morphometrics and analyses, I/O conversions, time-varying scalars and animations
 
@@ -37,6 +38,7 @@ Demo notebooks can be found in the `notebooks` directory.
   - Built from `SWCParseResult` with header-based reconnection merges
   - Node attributes preserved; provenance includes `merged_ids`, `lines`
 - `Segment` dataclass and `FrustaSet` (batched frusta mesh)
+- `FrustaSet` ordering utilities: `print_segment_order()`, `reordered(...)`, and `per_segment_face_slices()` to help align external per-segment arrays with mesh order
 - `PointSet` (batched spheres for overlay points)
 - Visualization functions in `viz.py`: `plot_centroid`, `plot_frusta`, `plot_frusta_with_centroid`, `plot_frusta_slider`, `plot_model`
 

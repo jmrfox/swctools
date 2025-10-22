@@ -12,7 +12,7 @@ renderers after light conversion.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, List, Sequence, Tuple, Any, Optional, Union
+from typing import Iterable, List, Sequence, Tuple, Any, Optional, Union, Mapping
 import os
 import io
 import math
@@ -333,6 +333,17 @@ class PointSet:
         stacks: int = 6,
         slices: int = 12,
     ) -> "PointSet":
+        """Build a batched low-res spheres mesh from a list of 3D points.
+
+        Parameters
+        ----------
+        points: sequence of (x, y, z)
+            Sphere centers.
+        base_radius: float
+            Sphere radius used when building the mesh (scaled later via `scaled()`).
+        stacks, slices: int
+            Sphere tessellation parameters (>=2 and >=3 respectively).
+        """
         verts, faces = batch_spheres(
             points, radius=base_radius, stacks=stacks, slices=slices
         )
@@ -408,6 +419,7 @@ class PointSet:
     def to_mesh3d_arrays(
         self,
     ) -> Tuple[List[float], List[float], List[float], List[int], List[int], List[int]]:
+        """Return Plotly `Mesh3d` arrays `(x, y, z, i, j, k)` for this point set."""
         x = [p[0] for p in self.vertices]
         y = [p[1] for p in self.vertices]
         z = [p[2] for p in self.vertices]
@@ -433,11 +445,12 @@ class PointSet:
             slices=self.slices,
         )
 
-
-# --------------------------------------------------------------------------------------
-# Frusta set derived from a GeneralModel
-# --------------------------------------------------------------------------------------
-    def project_onto_frusta(self, frusta: "FrustaSet", include_end_caps: Optional[bool] = None) -> "PointSet":
+    # --------------------------------------------------------------------------------------
+    # Frusta set derived from a GeneralModel
+    # --------------------------------------------------------------------------------------
+    def project_onto_frusta(
+        self, frusta: "FrustaSet", include_end_caps: Optional[bool] = None
+    ) -> "PointSet":
         """Project each point to the nearest surface of the nearest frustum.
 
         Parameters
@@ -569,7 +582,9 @@ class PointSet:
             # Accept the best (closest) candidate for this point
             new_points.append(best_q if best_q is not None else p)
         # Rebuild sphere mesh centered at the moved points
-        verts, faces = batch_spheres(new_points, radius=self.base_radius, stacks=self.stacks, slices=self.slices)
+        verts, faces = batch_spheres(
+            new_points, radius=self.base_radius, stacks=self.stacks, slices=self.slices
+        )
         return PointSet(
             vertices=verts,
             faces=faces,
@@ -598,6 +613,10 @@ class FrustaSet:
         Number of segments used (one per graph edge).
     edge_count: int
         Alias for `segment_count` for clarity.
+    segments: List[Segment]
+        The segments used to construct the frusta.
+    edge_uvs: Optional[List[Tuple[int, int]]]
+        Optional labels preserving which (u, v) edge generated each segment, in the same order.
     """
 
     vertices: List[Point3]
@@ -607,6 +626,7 @@ class FrustaSet:
     segment_count: int
     edge_count: int
     segments: List[Segment]
+    edge_uvs: Optional[List[Tuple[int, int]]] = None
 
     @classmethod
     def from_general_model(
@@ -621,11 +641,13 @@ class FrustaSet:
         Expects nodes to have attributes `x, y, z, r`.
         """
         segments: List[Segment] = []
+        edge_uvs: List[Tuple[int, int]] = []
         for u, v in gm.edges:
             xu, yu, zu = gm.nodes[u]["x"], gm.nodes[u]["y"], gm.nodes[u]["z"]
             xv, yv, zv = gm.nodes[v]["x"], gm.nodes[v]["y"], gm.nodes[v]["z"]
             ru, rv = float(gm.nodes[u]["r"]), float(gm.nodes[v]["r"])
             segments.append(Segment(a=(xu, yu, zu), b=(xv, yv, zv), ra=ru, rb=rv))
+            edge_uvs.append((int(u), int(v)))
 
         vertices, faces = batch_frusta(segments, sides=sides, end_caps=end_caps)
         return cls(
@@ -636,6 +658,7 @@ class FrustaSet:
             segment_count=len(segments),
             edge_count=len(segments),
             segments=segments,
+            edge_uvs=edge_uvs,
         )
 
     def to_mesh3d_arrays(
@@ -672,7 +695,87 @@ class FrustaSet:
             segment_count=self.segment_count,
             edge_count=self.edge_count,
             segments=scaled_segments,
+            edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
         )
+
+    # ----------------------------------------------------------------------------------
+    # Segment ordering utilities
+    # ----------------------------------------------------------------------------------
+    def print_segment_order(self) -> None:
+        """Print the current segment ordering; uses `(u, v)` labels if available."""
+        if self.edge_uvs is not None:
+            for idx, uv in enumerate(self.edge_uvs):
+                print(f"{idx}: {uv}")
+        else:
+            for idx, s in enumerate(self.segments):
+                a = f"({s.a[0]:.3f},{s.a[1]:.3f},{s.a[2]:.3f})"
+                b = f"({s.b[0]:.3f},{s.b[1]:.3f},{s.b[2]:.3f})"
+                print(f"{idx}: a={a} -> b={b}")
+
+    def reordered(
+        self,
+        new_order: Sequence[int] | None = None,
+        *,
+        label_remap: Optional[Mapping[Tuple[int, int], int]] = None,
+    ) -> "FrustaSet":
+        """Return a new set with segments reordered by index or (u, v) label mapping."""
+        n = self.segment_count
+        if label_remap is not None:
+            if self.edge_uvs is None:
+                raise ValueError("label_remap requires edge_uvs on this FrustaSet")
+            if len(label_remap) != n:
+                raise ValueError(
+                    "label_remap must assign every existing edge to a unique index"
+                )
+            # Build inverse permutation: new_index -> old_index
+            inv: List[Optional[int]] = [None] * n
+            for old_idx, uv in enumerate(self.edge_uvs):
+                if uv not in label_remap:
+                    raise ValueError(f"edge label {uv} missing from label_remap")
+                new_idx = label_remap[uv]
+                if new_idx < 0 or new_idx >= n or inv[new_idx] is not None:
+                    raise ValueError("label_remap must be a bijection over 0..N-1")
+                inv[new_idx] = old_idx
+            assert all(i is not None for i in inv)
+            new_order = [int(i) for i in inv]  # type: ignore
+
+        if new_order is None:
+            raise ValueError("Provide either new_order or label_remap")
+
+        if len(new_order) != n or sorted(new_order) != list(range(n)):
+            raise ValueError("new_order must be a permutation of range(N)")
+
+        # Reorder segments and optional labels, rebuild mesh
+        segs_new = [self.segments[i] for i in new_order]
+        labels_new = (
+            [self.edge_uvs[i] for i in new_order] if self.edge_uvs is not None else None
+        )
+        vertices, faces = batch_frusta(
+            segs_new, sides=self.sides, end_caps=self.end_caps
+        )
+        return FrustaSet(
+            vertices=vertices,
+            faces=faces,
+            sides=self.sides,
+            end_caps=self.end_caps,
+            segment_count=n,
+            edge_count=n,
+            segments=segs_new,
+            edge_uvs=labels_new,
+        )
+
+    def per_segment_face_slices(self) -> List[Tuple[int, int]]:
+        """Return (start, count) face spans for each segment in current mesh order."""
+        slices: List[Tuple[int, int]] = []
+        face_offset = 0
+        for s in self.segments:
+            _, f = frustum_mesh(s, sides=self.sides, end_caps=self.end_caps)
+            count = len(f)
+            slices.append((face_offset, count))
+            face_offset += count
+        if face_offset != len(self.faces):
+            return slices
+        return slices
 
 
 __all__ = [

@@ -27,7 +27,7 @@ Status: planning. No public API is stable yet.
     - [x] `geometry.py` (`Segment` frustum construction, `PointSet` spheres, helper math)
     - [x] `viz.py` (centroid, volumetric, `plot_model`, slider, overlay points)
     - [x] `config.py` (global Plotly config + `apply_layout`, equal-axes enforcement)
-    - [ ] `animation.py` (time-dependent scalar visualization)
+    - [ ] `animation.py` (time-dependent scalar visualization) — consolidated into `viz.py` via `plot_frusta_timeseries`
   - `data/` sample SWC files (small, clearly licensed)
   - `notebooks/` examples for Jupyter (user-authored; do not auto-create notebooks)
   - `tests/` unit tests
@@ -106,8 +106,8 @@ Status: planning. No public API is stable yet.
 ### M6 — Dynamics (time-dependent scalars on segments)
 
 - [ ] Data container for per-segment time series `V_i(t)`
-- [ ] `animate_segments(model, values, times, ...)` for Plotly animations
-- [ ] Color scales, legend, and playback controls
+- [x] `plot_frusta_timeseries(frusta, values, ...)` for Plotly animations with slider and playback controls
+- [x] Segment ordering/remap utilities in `FrustaSet` (`edge_uvs`, `print_segment_order`, `reordered`, `per_segment_face_slices`) to align values with mesh order
 - [ ] Example notebook with synthetic dynamics
 
 ### M7 — Examples and documentation

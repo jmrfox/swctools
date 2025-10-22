@@ -12,6 +12,7 @@ from typing import Dict, Any
 
 @dataclass
 class VizConfig:
+    """Global Plotly layout defaults used by `apply_layout` and `set_config`."""
     # Figure size
     width: int = 800
     height: int = 600

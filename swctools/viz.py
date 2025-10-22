@@ -461,3 +461,127 @@ def plot_model(
     fig = go.Figure(data=traces)
     apply_layout(fig, title="Model")
     return fig
+
+
+def plot_frusta_timeseries(
+    frusta: FrustaSet,
+    values: Sequence[Sequence[float]],
+    *,
+    colorscale: str | list = "Viridis",
+    cmin: Optional[float] = None,
+    cmax: Optional[float] = None,
+    opacity: float = 0.8,
+    flatshading: bool = True,
+    radius_scale: float = 1.0,
+    fps: int = 10,
+) -> go.Figure:
+    """Animate per-segment values over time by coloring frusta faces.
+
+    Parameters
+    ----------
+    frusta: FrustaSet
+        Batched frusta mesh. Optionally scaled via `radius_scale` before rendering.
+    values: Sequence[Sequence[float]]
+        Time series V_i(t) shaped [T][N], where N = `frusta.segment_count`.
+        Each time step provides one scalar per segment in the current order.
+    colorscale: str | list
+        Plotly colorscale for mapping intensities.
+    cmin, cmax: float | None
+        Fixed color range. If omitted, inferred from the data across all frames.
+    opacity: float
+        Mesh opacity.
+    flatshading: bool
+        Enable flat shading on the mesh.
+    radius_scale: float
+        Uniform radius scaling applied before meshing (1.0 = no change).
+    fps: int
+        Playback frame rate for the Play button.
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
+        A figure with a Mesh3d trace and animation frames, plus a slider and play/pause controls.
+    """
+    fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
+    x, y, z, i, j, k = fr.to_mesh3d_arrays()
+    slices = fr.per_segment_face_slices()
+    if len(values) == 0:
+        raise ValueError("values must have at least one time step")
+    T = len(values)
+    N = fr.segment_count
+    if any(len(vt) != N for vt in values):
+        raise ValueError("each time step must have N values, matching frusta.segment_count")
+    def faces_intensity(vt: Sequence[float]) -> list[float]:
+        arr: list[float] = []
+        for (start, count), val in zip(slices, vt):
+            arr.extend([float(val)] * count)
+        return arr
+    if cmin is None or cmax is None:
+        vmin = min(min(vt) for vt in values)
+        vmax = max(max(vt) for vt in values)
+        if cmin is None:
+            cmin = float(vmin)
+        if cmax is None:
+            cmax = float(vmax)
+    init = values[0]
+    intensity0 = faces_intensity(init)
+    mesh = go.Mesh3d(
+        x=x,
+        y=y,
+        z=z,
+        i=i,
+        j=j,
+        k=k,
+        opacity=opacity,
+        flatshading=flatshading,
+        intensity=intensity0,
+        intensitymode="cell",
+        colorscale=colorscale,
+        cmin=cmin,
+        cmax=cmax,
+        showscale=True,
+        name="frusta",
+    )
+    frames = []
+    for t, vt in enumerate(values):
+        intens = faces_intensity(vt)
+        frames.append(
+            go.Frame(
+                name=f"t={t}",
+                data=[go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=opacity, flatshading=flatshading, intensity=intens, intensitymode="cell", colorscale=colorscale, cmin=cmin, cmax=cmax)],
+            )
+        )
+    frame_duration = int(1000 / max(1, fps))
+    slider_steps = [
+        {
+            "label": f"{t}",
+            "method": "animate",
+            "args": [[f"t={t}"], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}],
+        }
+        for t in range(T)
+    ]
+    sliders = [
+        {
+            "active": 0,
+            "currentvalue": {"prefix": "t: ", "visible": True},
+            "steps": slider_steps,
+        }
+    ]
+    updatemenus = [
+        {
+            "type": "buttons",
+            "direction": "left",
+            "pad": {"r": 10, "t": 60},
+            "showactive": False,
+            "x": 0.0,
+            "y": 0,
+            "buttons": [
+                {"label": "▶ Play", "method": "animate", "args": [None, {"fromcurrent": True, "frame": {"duration": frame_duration}, "transition": {"duration": 0}}]},
+                {"label": "❚❚ Pause", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}]},
+            ],
+        }
+    ]
+    fig = go.Figure(data=[mesh], frames=frames)
+    apply_layout(fig, title="Frusta timeseries")
+    fig.update_layout(sliders=sliders, updatemenus=updatemenus)
+    return fig
