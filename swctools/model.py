@@ -228,6 +228,23 @@ class SWCModel(nx.DiGraph):
                 else:
                     print(f"  {u} -> {v}")
 
+    def scale(self, scalar: float) -> None:
+        """Scale all node coordinates and radii in-place by `scalar`.
+
+        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar`.
+        """
+        if not isinstance(scalar, (int, float)):
+            raise TypeError("scalar must be a number")
+        for _, attrs in self.nodes(data=True):
+            if "x" in attrs:
+                attrs["x"] *= scalar
+            if "y" in attrs:
+                attrs["y"] *= scalar
+            if "z" in attrs:
+                attrs["z"] *= scalar
+            if "r" in attrs:
+                attrs["r"] *= scalar
+
 
 class GeneralModel(nx.Graph):
     """Undirected morphology graph with reconnection merges.
@@ -411,3 +428,20 @@ class GeneralModel(nx.Graph):
                     print(f"  {u} -- {v}: {dict(attrs)}")
                 else:
                     print(f"  {u} -- {v}")
+
+    def scale(self, scalar: float) -> None:
+        """Scale all node coordinates and radii in-place by `scalar`.
+
+        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar`.
+        """
+        if not isinstance(scalar, (int, float)):
+            raise TypeError("scalar must be a number")
+        for _, attrs in self.nodes(data=True):
+            if "x" in attrs:
+                attrs["x"] *= scalar
+            if "y" in attrs:
+                attrs["y"] *= scalar
+            if "z" in attrs:
+                attrs["z"] *= scalar
+            if "r" in attrs:
+                attrs["r"] *= scalar
