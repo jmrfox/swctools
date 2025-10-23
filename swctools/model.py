@@ -287,8 +287,6 @@ class SWCModel(nx.Graph):
         with open(path_str, "w", encoding="utf-8", newline="\n") as f:
             for line in header_lines:
                 f.write(line + "\n")
-            if header_lines:
-                f.write("\n")
 
             # Write nodes ordered by id
             for n in sorted(int(i) for i in self.nodes):
