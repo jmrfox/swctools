@@ -235,7 +235,19 @@ class SWCModel(nx.Graph):
 
     def copy(self) -> "SWCModel":
         """Return a shallow copy of this model (nodes/edges/attributes)."""
-        return super().copy(as_view=False)
+        new = super().copy(as_view=False)
+        # Preserve original tree parent mapping on the copy
+        try:
+            new._parents = dict(self._parents)
+        except AttributeError:
+            # In case upstream ever returns a base nx.Graph, reconstruct
+            nm = SWCModel()
+            nm.add_nodes_from(new.nodes(data=True))
+            nm.add_edges_from(new.edges(data=True))
+            nm.graph.update(dict(new.graph))
+            nm._parents = dict(self._parents)
+            return nm
+        return new
 
     def to_swc_file(
         self,
