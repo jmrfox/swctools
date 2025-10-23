@@ -464,7 +464,9 @@ class PointSet:
             raise TypeError("scalar must be a number")
         if scalar == 1.0:
             return self
-        new_points = [(p[0] * scalar, p[1] * scalar, p[2] * scalar) for p in self.points]
+        new_points = [
+            (p[0] * scalar, p[1] * scalar, p[2] * scalar) for p in self.points
+        ]
         new_radius = self.base_radius * scalar
         verts, faces = batch_spheres(
             new_points, radius=new_radius, stacks=self.stacks, slices=self.slices
@@ -479,7 +481,7 @@ class PointSet:
         )
 
     # --------------------------------------------------------------------------------------
-    # Frusta set derived from a GeneralModel
+    # Frusta set derived from a SWCModel
     # --------------------------------------------------------------------------------------
     def project_onto_frusta(
         self, frusta: "FrustaSet", include_end_caps: Optional[bool] = None
@@ -630,7 +632,7 @@ class PointSet:
 
 @dataclass(frozen=True)
 class FrustaSet:
-    """A batched frusta mesh derived from a `GeneralModel`.
+    """A batched frusta mesh derived from a `SWCModel`.
 
     Attributes
     ----------
@@ -662,9 +664,9 @@ class FrustaSet:
     edge_uvs: Optional[List[Tuple[int, int]]] = None
 
     @classmethod
-    def from_general_model(
+    def from_swc_model(
         cls,
-        gm: Any,
+        model: SWCModel,
         *,
         sides: int = 16,
         end_caps: bool = False,
@@ -675,10 +677,10 @@ class FrustaSet:
         """
         segments: List[Segment] = []
         edge_uvs: List[Tuple[int, int]] = []
-        for u, v in gm.edges:
-            xu, yu, zu = gm.nodes[u]["x"], gm.nodes[u]["y"], gm.nodes[u]["z"]
-            xv, yv, zv = gm.nodes[v]["x"], gm.nodes[v]["y"], gm.nodes[v]["z"]
-            ru, rv = float(gm.nodes[u]["r"]), float(gm.nodes[v]["r"])
+        for u, v in model.edges:
+            xu, yu, zu = model.nodes[u]["x"], model.nodes[u]["y"], model.nodes[u]["z"]
+            xv, yv, zv = model.nodes[v]["x"], model.nodes[v]["y"], model.nodes[v]["z"]
+            ru, rv = float(model.nodes[u]["r"]), float(model.nodes[v]["r"])
             segments.append(Segment(a=(xu, yu, zu), b=(xv, yv, zv), ra=ru, rb=rv))
             edge_uvs.append((int(u), int(v)))
 

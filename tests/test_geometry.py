@@ -1,4 +1,4 @@
-from swctools import Segment, frustum_mesh, batch_frusta, FrustaSet, GeneralModel
+from swctools import Segment, frustum_mesh, batch_frusta, FrustaSet, SWCModel
 
 
 def test_single_frustum_mesh_counts():
@@ -23,8 +23,8 @@ def test_batch_frusta_reindexing():
     assert max(max(face) for face in f) < len(v)
 
 
-def test_frustaset_from_general_model_and_arrays():
-    """Build `FrustaSet` from a `GeneralModel` and confirm Mesh3d arrays match vertices/faces lengths."""
+def test_frustaset_from_swc_model_and_arrays():
+    """Build `FrustaSet` from an `SWCModel` and confirm Mesh3d arrays match vertices/faces lengths."""
     swc = """
 # CYCLE_BREAK reconnect 2 3
 1 1 0 0 0 1 -1
@@ -32,8 +32,9 @@ def test_frustaset_from_general_model_and_arrays():
 3 3 1 0 0 0.5 1
 4 3 2 0 0 0.4 2
 """.strip()
-    gm = GeneralModel.from_swc_file(swc, strict=True, validate_reconnections=True)
-    fr = FrustaSet.from_general_model(gm, sides=8, end_caps=False)
+    m = SWCModel.from_swc_file(swc, strict=True, validate_reconnections=True)
+    gm = m.make_cycle_connections(validate_reconnections=True)
+    fr = FrustaSet.from_swc_model(gm, sides=8, end_caps=False)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
     # Basic shape checks
     assert len(x) == len(y) == len(z) == len(fr.vertices)

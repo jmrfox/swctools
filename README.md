@@ -11,18 +11,17 @@ Demo notebooks can be found in the `notebooks` directory.
 ## Features
 
 - **SWC parser**: `parse_swc()` with robust error messages, header reconnection directives, iterable/file/string sources
-- **Data models**:
-  - `SWCModel` (`networkx.DiGraph`) for directed parent➔child topology with node attributes (`t, x, y, z, r`)
-  - `GeneralModel` (`networkx.Graph`) for visualization; applies `# CYCLE_BREAK reconnect i j` merges (union-find)
+- **Data model**:
+  - `SWCModel` (`networkx.Graph`) with undirected storage and an internal parent map for original SWC directed tree relations; supports `make_cycle_connections()` to apply `# CYCLE_BREAK reconnect i j` merges (union-find)
   - Shared graph metrics via `_graph_attributes()` and `print_attributes()` helpers
 - **Geometry**:
   - `Segment` dataclass and frustum meshing utilities (`frustum_mesh`, `batch_frusta`)
-  - `FrustaSet.from_general_model()` to build a batched frusta mesh from a `GeneralModel`
+  - `FrustaSet.from_swc_model()` to build a batched frusta mesh from an `SWCModel`
   - `PointSet` for low-res spheres at arbitrary xyz points (for overlay markers)
 - **Visualization**:
-  - `plot_centroid(general_model, ...)` for skeleton plotting (`Scatter3d`)
+  - `plot_centroid(model, ...)` for skeleton plotting (`Scatter3d`)
   - `plot_frusta(frusta_set, ..., radius_scale=1.0)` for volumetric frusta rendering (`Mesh3d`)
-  - `plot_frusta_with_centroid(gm, frusta, ...)` to overlay skeleton and mesh
+  - `plot_frusta_with_centroid(model, frusta, ...)` to overlay skeleton and mesh
   - `plot_frusta_slider(frusta, min_scale, max_scale, steps)` interactive radius scale slider
   - `plot_model(...)` master entry point combining centroid, frusta, slider, and `PointSet` overlays
   - `plot_frusta_timeseries(frusta, values, ...)` animate time-dependent per-segment scalars V_i(t) with a slider and playback controls
@@ -31,12 +30,11 @@ Demo notebooks can be found in the `notebooks` directory.
 
 ## Design overview
 
-- `SWCModel` (`networkx.DiGraph`)
+- `SWCModel` (`networkx.Graph` with parent map)
   - Nodes keyed by SWC id `n`
   - Node attributes: `x`, `y`, `z`, `r`, `t` (type), and optional metadata
-- `GeneralModel` (`networkx.Graph`)
-  - Built from `SWCParseResult` with header-based reconnection merges
-  - Node attributes preserved; provenance includes `merged_ids`, `lines`
+  - `_parents` preserves the original directed parent of each node; `roots()`, `parent_of()`, `path_to_root()` use this map
+  - `make_cycle_connections()` merges reconnection pairs and returns a merged model (can include cycles)
 - `Segment` dataclass and `FrustaSet` (batched frusta mesh)
 - `FrustaSet` ordering utilities: `print_segment_order()`, `reordered(...)`, and `per_segment_face_slices()` to help align external per-segment arrays with mesh order
 - `PointSet` (batched spheres for overlay points)
@@ -44,7 +42,7 @@ Demo notebooks can be found in the `notebooks` directory.
 
 - Use in Jupyter:
   - Launch a notebook and import `swctools`
-  - Load or paste an SWC and use `GeneralModel`, `FrustaSet`, `plot_centroid`, `plot_frusta`
+  - Load or paste an SWC and use `SWCModel`, `FrustaSet`, `plot_centroid`, `plot_frusta`
 
 ## Configuration (Plotly)
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from swctools import parse_swc, SWCParseResult, SWCRecord, SWCModel, GeneralModel
+from swctools import parse_swc, SWCParseResult, SWCRecord, SWCModel
 
 
 def test_build_from_parse_result_basic():
@@ -63,8 +63,8 @@ def test_from_swc_file(tmp_path: Path):
     assert m.path_to_root(2) == [2, 1]
 
 
-def test_general_model_reconnection_merge_and_print(capsys):
-    """Ensure GeneralModel merges reconnection pairs and print_attributes outputs a summary.
+def test_reconnection_merge_and_print(capsys):
+    """Ensure `SWCModel.make_cycle_connections()` merges reconnection pairs and prints a summary.
 
     Verifies merged node set, presence of an edge, and that printed output contains
     expected summary tokens.
@@ -75,7 +75,8 @@ def test_general_model_reconnection_merge_and_print(capsys):
 2 3 2 0 0 0.5 1
 3 3 2 0 0 0.5 1
 """.strip()
-    gm = GeneralModel.from_swc_file(swc, strict=True, validate_reconnections=True)
+    m = SWCModel.from_swc_file(swc, strict=True, validate_reconnections=True)
+    gm = m.make_cycle_connections(validate_reconnections=True)
     # Nodes 2 and 3 should merge into a single representative; expect nodes {1, 2}
     assert set(gm.nodes) == {1, 2}
     assert gm.has_edge(1, 2)
@@ -84,7 +85,7 @@ def test_general_model_reconnection_merge_and_print(capsys):
     gm.print_attributes()
     gm.print_attributes(node_info=True, edge_info=True)
     out = capsys.readouterr().out
-    assert "GeneralModel:" in out
+    assert "SWCModel:" in out
     assert "nodes=" in out and "edges=" in out
 
 
@@ -124,10 +125,10 @@ def test_optional_data_directory_models_if_present():
         m = SWCModel.from_swc_file(swc_path, strict=True, validate_reconnections=False)
         assert isinstance(m, SWCModel)
         assert m.number_of_nodes() > 0
-        # Every non-root should have in-degree 1
+        # Every non-root should have exactly one parent in the original tree
+        roots = set(m.roots())
         for n in m.nodes:
-            indeg = m.in_degree(n)
-            if n in set(m.roots()):
-                assert indeg == 0
+            if n in roots:
+                assert m.parent_of(n) is None
             else:
-                assert indeg == 1
+                assert m.parent_of(n) in m.nodes

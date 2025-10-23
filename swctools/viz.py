@@ -1,6 +1,6 @@
 """Visualization helpers for swctools.
 
-- plot_centroid: skeleton plotting from GeneralModel using Scatter3d
+- plot_centroid: skeleton plotting from SWCModel using Scatter3d
 - plot_frusta: volumetric frusta plotting from FrustaSet using Mesh3d
 """
 
@@ -14,8 +14,10 @@ from .geometry import FrustaSet, PointSet
 from .config import apply_layout
 
 
-def plot_centroid(gm, *, marker_size: float = 2.0, line_width: float = 2.0, show_nodes: bool = True) -> go.Figure:
-    """Plot centroid skeleton from a GeneralModel.
+def plot_centroid(
+    gm, *, marker_size: float = 2.0, line_width: float = 2.0, show_nodes: bool = True
+) -> go.Figure:
+    """Plot centroid skeleton from an `SWCModel`.
 
     Edges are drawn as line segments in 3D using Scatter3d.
     """
@@ -113,7 +115,7 @@ def plot_frusta_with_centroid(
     show_nodes: bool = False,
     node_size: float = 2.0,
 ) -> go.Figure:
-    """Overlay frusta mesh with centroid skeleton from a `GeneralModel`.
+    """Overlay frusta mesh with centroid skeleton from an `SWCModel`.
 
     Parameters mirror `plot_centroid` and `plot_frusta` with an extra `radius_scale`.
     """
@@ -220,7 +222,19 @@ def plot_frusta_slider(
         frames.append(
             go.Frame(
                 name=f"scale={s:.2f}",
-                data=[go.Mesh3d(x=xs, y=ys, z=zs, i=bi, j=bj, k=bk, color=color, opacity=opacity, flatshading=flatshading)],
+                data=[
+                    go.Mesh3d(
+                        x=xs,
+                        y=ys,
+                        z=zs,
+                        i=bi,
+                        j=bj,
+                        k=bk,
+                        color=color,
+                        opacity=opacity,
+                        flatshading=flatshading,
+                    )
+                ],
             )
         )
 
@@ -229,7 +243,14 @@ def plot_frusta_slider(
         {
             "label": f"{s:.2f}",
             "method": "animate",
-            "args": [[f"scale={s:.2f}"], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}],
+            "args": [
+                [f"scale={s:.2f}"],
+                {
+                    "mode": "immediate",
+                    "frame": {"duration": 0},
+                    "transition": {"duration": 0},
+                },
+            ],
         }
         for s in scales
     ]
@@ -251,8 +272,30 @@ def plot_frusta_slider(
             "x": 0.0,
             "y": 0,
             "buttons": [
-                {"label": "▶ Play", "method": "animate", "args": [None, {"fromcurrent": True, "frame": {"duration": 0}, "transition": {"duration": 0}}]},
-                {"label": "❚❚ Pause", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}]},
+                {
+                    "label": "▶ Play",
+                    "method": "animate",
+                    "args": [
+                        None,
+                        {
+                            "fromcurrent": True,
+                            "frame": {"duration": 0},
+                            "transition": {"duration": 0},
+                        },
+                    ],
+                },
+                {
+                    "label": "❚❚ Pause",
+                    "method": "animate",
+                    "args": [
+                        [None],
+                        {
+                            "mode": "immediate",
+                            "frame": {"duration": 0},
+                            "transition": {"duration": 0},
+                        },
+                    ],
+                },
             ],
         }
     ]
@@ -265,7 +308,7 @@ def plot_frusta_slider(
 
 def plot_model(
     *,
-    gm=None,
+    swc_model: SWCModel | None = None,
     frusta: FrustaSet | None = None,
     show_frusta: bool = True,
     show_centroid: bool = True,
@@ -305,17 +348,19 @@ def plot_model(
     # Build frusta if needed
     base_fr = frusta
     if show_frusta and base_fr is None:
-        if gm is None:
-            raise ValueError("plot_model: provide either `frusta` or a `gm` to build from")
-        base_fr = FrustaSet.from_general_model(gm, sides=sides, end_caps=end_caps)
+        if swc_model is None:
+            raise ValueError(
+                "plot_model: provide either `frusta` or a `gm` to build from"
+            )
+        base_fr = FrustaSet.from_swc_model(swc_model, sides=sides, end_caps=end_caps)
 
     # Centroid traces
-    if show_centroid and gm is not None:
+    if show_centroid and swc_model is not None:
         xs, ys, zs = [], [], []
-        for u, v in gm.edges:
-            xs.extend([gm.nodes[u]["x"], gm.nodes[v]["x"], None])
-            ys.extend([gm.nodes[u]["y"], gm.nodes[v]["y"], None])
-            zs.extend([gm.nodes[u]["z"], gm.nodes[v]["z"], None])
+        for u, v in swc_model.edges:
+            xs.extend([swc_model.nodes[u]["x"], swc_model.nodes[v]["x"], None])
+            ys.extend([swc_model.nodes[u]["y"], swc_model.nodes[v]["y"], None])
+            zs.extend([swc_model.nodes[u]["z"], swc_model.nodes[v]["z"], None])
         centroid = go.Scatter3d(
             x=xs,
             y=ys,
@@ -327,9 +372,9 @@ def plot_model(
         traces.append(centroid)
 
         if show_nodes:
-            xn = [gm.nodes[n]["x"] for n in gm.nodes]
-            yn = [gm.nodes[n]["y"] for n in gm.nodes]
-            zn = [gm.nodes[n]["z"] for n in gm.nodes]
+            xn = [swc_model.nodes[n]["x"] for n in swc_model.nodes]
+            yn = [swc_model.nodes[n]["y"] for n in swc_model.nodes]
+            zn = [swc_model.nodes[n]["z"] for n in swc_model.nodes]
             nodes = go.Scatter3d(
                 x=xn,
                 y=yn,
@@ -370,7 +415,9 @@ def plot_model(
             scales = [min_scale + (span * k / (steps - 1)) for k in range(steps)]
             # Pick initial scale near 1.0 if in range
             if min_scale <= 1.0 <= max_scale:
-                init_idx = min(range(len(scales)), key=lambda idx: abs(scales[idx] - 1.0))
+                init_idx = min(
+                    range(len(scales)), key=lambda idx: abs(scales[idx] - 1.0)
+                )
             else:
                 init_idx = 0
             init_scale = scales[init_idx]
@@ -400,7 +447,19 @@ def plot_model(
                 frames.append(
                     go.Frame(
                         name=f"scale={s:.2f}",
-                        data=[go.Mesh3d(x=xs, y=ys, z=zs, i=bi, j=bj, k=bk, color=color, opacity=opacity, flatshading=flatshading)],
+                        data=[
+                            go.Mesh3d(
+                                x=xs,
+                                y=ys,
+                                z=zs,
+                                i=bi,
+                                j=bj,
+                                k=bk,
+                                color=color,
+                                opacity=opacity,
+                                flatshading=flatshading,
+                            )
+                        ],
                     )
                 )
 
@@ -408,7 +467,14 @@ def plot_model(
                 {
                     "label": f"{s:.2f}",
                     "method": "animate",
-                    "args": [[f"scale={s:.2f}"], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}],
+                    "args": [
+                        [f"scale={s:.2f}"],
+                        {
+                            "mode": "immediate",
+                            "frame": {"duration": 0},
+                            "transition": {"duration": 0},
+                        },
+                    ],
                 }
                 for s in scales
             ]
@@ -430,8 +496,30 @@ def plot_model(
                     "x": 0.0,
                     "y": 0,
                     "buttons": [
-                        {"label": "▶ Play", "method": "animate", "args": [None, {"fromcurrent": True, "frame": {"duration": 0}, "transition": {"duration": 0}}]},
-                        {"label": "❚❚ Pause", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}]},
+                        {
+                            "label": "▶ Play",
+                            "method": "animate",
+                            "args": [
+                                None,
+                                {
+                                    "fromcurrent": True,
+                                    "frame": {"duration": 0},
+                                    "transition": {"duration": 0},
+                                },
+                            ],
+                        },
+                        {
+                            "label": "❚❚ Pause",
+                            "method": "animate",
+                            "args": [
+                                [None],
+                                {
+                                    "mode": "immediate",
+                                    "frame": {"duration": 0},
+                                    "transition": {"duration": 0},
+                                },
+                            ],
+                        },
                     ],
                 }
             ]
@@ -510,12 +598,16 @@ def plot_frusta_timeseries(
     T = len(values)
     N = fr.segment_count
     if any(len(vt) != N for vt in values):
-        raise ValueError("each time step must have N values, matching frusta.segment_count")
+        raise ValueError(
+            "each time step must have N values, matching frusta.segment_count"
+        )
+
     def faces_intensity(vt: Sequence[float]) -> list[float]:
         arr: list[float] = []
         for (start, count), val in zip(slices, vt):
             arr.extend([float(val)] * count)
         return arr
+
     if cmin is None or cmax is None:
         vmin = min(min(vt) for vt in values)
         vmax = max(max(vt) for vt in values)
@@ -548,7 +640,23 @@ def plot_frusta_timeseries(
         frames.append(
             go.Frame(
                 name=f"t={t}",
-                data=[go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, opacity=opacity, flatshading=flatshading, intensity=intens, intensitymode="cell", colorscale=colorscale, cmin=cmin, cmax=cmax)],
+                data=[
+                    go.Mesh3d(
+                        x=x,
+                        y=y,
+                        z=z,
+                        i=i,
+                        j=j,
+                        k=k,
+                        opacity=opacity,
+                        flatshading=flatshading,
+                        intensity=intens,
+                        intensitymode="cell",
+                        colorscale=colorscale,
+                        cmin=cmin,
+                        cmax=cmax,
+                    )
+                ],
             )
         )
     frame_duration = int(1000 / max(1, fps))
@@ -556,7 +664,14 @@ def plot_frusta_timeseries(
         {
             "label": f"{t}",
             "method": "animate",
-            "args": [[f"t={t}"], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}],
+            "args": [
+                [f"t={t}"],
+                {
+                    "mode": "immediate",
+                    "frame": {"duration": 0},
+                    "transition": {"duration": 0},
+                },
+            ],
         }
         for t in range(T)
     ]
@@ -576,8 +691,30 @@ def plot_frusta_timeseries(
             "x": 0.0,
             "y": 0,
             "buttons": [
-                {"label": "▶ Play", "method": "animate", "args": [None, {"fromcurrent": True, "frame": {"duration": frame_duration}, "transition": {"duration": 0}}]},
-                {"label": "❚❚ Pause", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}, "transition": {"duration": 0}}]},
+                {
+                    "label": "▶ Play",
+                    "method": "animate",
+                    "args": [
+                        None,
+                        {
+                            "fromcurrent": True,
+                            "frame": {"duration": frame_duration},
+                            "transition": {"duration": 0},
+                        },
+                    ],
+                },
+                {
+                    "label": "❚❚ Pause",
+                    "method": "animate",
+                    "args": [
+                        [None],
+                        {
+                            "mode": "immediate",
+                            "frame": {"duration": 0},
+                            "transition": {"duration": 0},
+                        },
+                    ],
+                },
             ],
         }
     ]

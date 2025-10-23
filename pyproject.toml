@@ -47,18 +47,9 @@ pythonpath = ["."]
 requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build]
-include = [
-    "swctools/**",
-    "README.md",
-    "LICENSE",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = ["swctools"]
-
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
+    "nbformat>=5.10.4",
     "pytest>=8.4.2",
     "ruff>=0.6.9",
     "black>=24.10.0",
@@ -69,4 +60,15 @@ dev = [
     "ipykernel>=6.29.0",
     "ipywidgets>=8.1",
 ]
+
+[tool.hatch.build]
+include = [
+    "swctools/**",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["swctools"]
+
 

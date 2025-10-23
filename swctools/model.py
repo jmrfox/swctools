@@ -1,13 +1,13 @@
 """SWC graph data model.
 
-SWCModel is a directed graph (forest) where nodes are SWC points and
-edges are directed from parent -> child according to the SWC format.
+SWCModel stores SWC morphology as an undirected graph where nodes are SWC points,
+and the original directed parent -> child relationships are preserved in an
+internal parent map.
 
 Notes
 -----
-- Use `SWCModel` for topology and attribute management of parsed SWC.
-- Visualization should operate on a separate undirected `GeneralModel`
-  that may perform reconnection merges; see project TODOs.
+- Use `SWCModel` for topology and attribute management of parsed SWC, and for
+  reconnection merges via `SWCModel.make_cycle_connections()`.
 """
 
 from __future__ import annotations
@@ -76,8 +76,8 @@ def _graph_attributes(G: nx.Graph | nx.DiGraph) -> dict[str, Any]:
     }
 
 
-class SWCModel(nx.DiGraph):
-    """Directed SWC morphology graph.
+class SWCModel(nx.Graph):
+    """SWC morphology graph (undirected storage with directed-tree metadata).
 
     Nodes are keyed by SWC id `n` and store attributes:
     - t: int (structure type)
@@ -85,12 +85,15 @@ class SWCModel(nx.DiGraph):
     - r: float (radius)
     - line: int (line number in source; informational)
 
-    Edges are directed parent -> child.
+    Directed parent -> child relationships from the SWC are preserved via an
+    internal parent map (`_parents`). The underlying graph is undirected. Cycle
+    connections can be applied via `make_cycle_connections()` which may merge nodes.
     """
 
     def __init__(self) -> None:
-        # Initialize as a plain DiGraph; we don't need multigraph features.
+        # Initialize as a plain Graph; we don't need multigraph features.
         super().__init__()
+        self._parents: dict[int, int | None] = {}
 
     # ----------------------------------------------------------------------------------------------
     # Construction helpers
@@ -98,7 +101,12 @@ class SWCModel(nx.DiGraph):
     @classmethod
     def from_parse_result(cls, result: SWCParseResult) -> "SWCModel":
         """Build a model from a parsed SWC result."""
-        return cls.from_records(result.records)
+        model = cls.from_records(result.records)
+        try:
+            model.graph["reconnections"] = list(result.reconnections)
+        except Exception:
+            model.graph["reconnections"] = []
+        return model
 
     @classmethod
     def from_records(
@@ -128,11 +136,16 @@ class SWCModel(nx.DiGraph):
                 line=rec.line,
             )
 
-        # Second pass: add edges parent -> child
+        # Second pass: record tree parents and add undirected edges
+        pmap: dict[int, int | None] = {}
         for rec in rec_values:
-            if rec.parent != -1:
-                model.add_edge(rec.parent, rec.n)
+            parent = None if rec.parent == -1 else rec.parent
+            pmap[rec.n] = parent
+            if parent is not None:
+                model.add_edge(parent, rec.n)
 
+        # store original tree parent mapping
+        model._parents = pmap
         return model
 
     @classmethod
@@ -161,23 +174,12 @@ class SWCModel(nx.DiGraph):
     # Convenience queries
     # ----------------------------------------------------------------------------------------------
     def roots(self) -> list[int]:
-        """Return nodes with in-degree 0 (forest roots)."""
-        return [n for n, deg in self.in_degree() if deg == 0]
+        """Return nodes with no parent in the original SWC tree."""
+        return [n for n, p in self._parents.items() if p is None]
 
     def parent_of(self, n: int) -> int | None:
-        """Return the parent id of node n, or None if n is a root.
-
-        SWC trees should have at most one parent per node; if multiple are found
-        this indicates invalid structure for SWC and an error is raised.
-        """
-        preds = list(self.predecessors(n))
-        if not preds:
-            return None
-        if len(preds) > 1:
-            raise ValueError(
-                f"Node {n} has multiple parents in SWCModel; expected a tree/forest"
-            )
-        return preds[0]
+        """Return the parent id of node n from the original SWC tree (or None)."""
+        return self._parents.get(n)
 
     def path_to_root(self, n: int) -> list[int]:
         """Return the path from node n up to its root, inclusive.
@@ -194,7 +196,9 @@ class SWCModel(nx.DiGraph):
             current = p
         return path
 
-    def print_attributes(self, *, node_info: bool = False, edge_info: bool = False) -> None:
+    def print_attributes(
+        self, *, node_info: bool = False, edge_info: bool = False
+    ) -> None:
         """Print graph attributes and optional node/edge details.
 
         Parameters
@@ -202,13 +206,14 @@ class SWCModel(nx.DiGraph):
         node_info: bool
             If True, print per-node attributes (t, x, y, z, r, line where present).
         edge_info: bool
-            If True, print all edges (u -> v) with edge attributes if any.
+            If True, print all edges (u -- v) with edge attributes if any.
         """
         info = _graph_attributes(self)
+        roots_count = len(self.roots())
         header = (
             f"SWCModel: nodes={info['nodes']}, edges={info['edges']}, "
             f"components={info['components']}, cycles={info['cycles']}, "
-            f"branch_points={info['branch_points_count']}, roots={info['roots_count']}, "
+            f"branch_points={info['branch_points_count']}, roots={roots_count}, "
             f"leaves={info['leaves_count']}, self_loops={info['self_loops']}, density={info['density']:.4f}"
         )
         print(header)
@@ -224,13 +229,78 @@ class SWCModel(nx.DiGraph):
             print("Edges:")
             for u, v, attrs in self.edges(data=True):
                 if attrs:
-                    print(f"  {u} -> {v}: {dict(attrs)}")
+                    print(f"  {u} -- {v}: {dict(attrs)}")
                 else:
-                    print(f"  {u} -> {v}")
+                    print(f"  {u} -- {v}")
 
     def copy(self) -> "SWCModel":
         """Return a shallow copy of this model (nodes/edges/attributes)."""
         return super().copy(as_view=False)
+
+    def to_swc_file(
+        self,
+        path: str | os.PathLike[str],
+        *,
+        precision: int = 6,
+        include_reconnections: bool = True,
+        header: Iterable[str] | None = None,
+    ) -> None:
+        """Write the model to an SWC file.
+
+        The output uses the standard 7-column SWC format per row:
+        "n T x y z r parent" with floats formatted to the requested precision.
+
+        Parameters
+        ----------
+        path: str | os.PathLike[str]
+            Destination file path.
+        precision: int
+            Decimal places for floating-point fields (x, y, z, r). Default 6.
+        include_reconnections: bool
+            If True and reconnections are present in `self.graph['reconnections']`,
+            emit header lines of the form "# CYCLE_BREAK reconnect i j".
+        header: Iterable[str] | None
+            Optional additional header comment lines (without leading '#').
+        """
+        if not isinstance(precision, int) or precision < 0:
+            raise ValueError("precision must be a non-negative integer")
+
+        # Prepare header lines
+        header_lines: list[str] = []
+        if header:
+            for line in header:
+                text = str(line).rstrip("\n")
+                if text.startswith("#"):
+                    header_lines.append(text)
+                else:
+                    header_lines.append(f"# {text}")
+
+        if include_reconnections:
+            pairs = list(self.graph.get("reconnections", []))
+            for a, b in sorted((tuple(sorted(map(int, p))) for p in pairs)):
+                header_lines.append(f"# CYCLE_BREAK reconnect {a} {b}")
+
+        fmt = f"{{:.{precision}f}}"
+
+        # Write file
+        path_str = os.fspath(path)
+        with open(path_str, "w", encoding="utf-8", newline="\n") as f:
+            for line in header_lines:
+                f.write(line + "\n")
+            if header_lines:
+                f.write("\n")
+
+            # Write nodes ordered by id
+            for n in sorted(int(i) for i in self.nodes):
+                attrs = self.nodes[n]
+                t = int(attrs.get("t", 0))
+                x = fmt.format(float(attrs.get("x", 0.0)))
+                y = fmt.format(float(attrs.get("y", 0.0)))
+                z = fmt.format(float(attrs.get("z", 0.0)))
+                r = fmt.format(float(attrs.get("r", 0.0)))
+                parent = self._parents.get(n)
+                pval = -1 if parent is None else int(parent)
+                f.write(f"{n} {t} {x} {y} {z} {r} {pval}\n")
 
     def scale(self, scalar: float) -> "SWCModel":
         """Return a new model with all node coordinates and radii scaled by `scalar`.
@@ -251,48 +321,26 @@ class SWCModel(nx.DiGraph):
                 attrs["r"] *= scalar
         return new
 
-
-class GeneralModel(nx.Graph):
-    """Undirected morphology graph with reconnection merges.
-
-    - Subclasses `networkx.Graph`.
-    - Nodes correspond to merged SWC points according to header annotations
-      `# CYCLE_BREAK reconnect i j`.
-    - Node attributes include: `x, y, z, r` (identical across merged ids),
-      representative `n`, optional `t`, and provenance lists `merged_ids`, `lines`.
-    - Edges are undirected between merged nodes; self-loops are skipped if
-      parent/child collapse into the same merged node.
-    """
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    # ------------------------------------------------------------------------------------------
-    # Construction helpers
-    # ------------------------------------------------------------------------------------------
-    @classmethod
-    def from_parse_result(
-        cls,
-        result: SWCParseResult,
+    def make_cycle_connections(
+        self,
         *,
         validate_reconnections: bool = True,
         float_tol: float = 1e-9,
-    ) -> "GeneralModel":
-        """Build a merged undirected model from a parsed SWC result.
+    ) -> "SWCModel":
+        """Return a new SWCModel with reconnection pairs merged and undirected edges across merged reps.
 
-        If `validate_reconnections` is True, enforce identical (x, y, z, r)
-        for each reconnect pair before merging (useful when `parse_swc` was
-        called with validation disabled).
+        Uses reconnection pairs stored under `self.graph['reconnections']` if present.
+        Node attributes are merged; provenance kept under `merged_ids` and `lines`.
+        After merges, the original tree parent mapping no longer applies and parents are set to None.
         """
-        # Materialize record mapping
-        records = result.records
+        pairs = list(self.graph.get("reconnections", []))
+        if not pairs:
+            return self.copy()
 
-        # ---- Union-Find for merges -------------------------------------------------------------
         parent: dict[int, int] = {}
         rank: dict[int, int] = {}
 
         def uf_find(a: int) -> int:
-            # Path compression
             pa = parent.get(a, a)
             if pa != a:
                 parent[a] = uf_find(pa)
@@ -301,19 +349,10 @@ class GeneralModel(nx.Graph):
                 rank.setdefault(a, 0)
             return parent[a]
 
-        def identical_xyzr(a: SWCRecord, b: SWCRecord) -> bool:
-            return (
-                abs(a.x - b.x) <= float_tol
-                and abs(a.y - b.y) <= float_tol
-                and abs(a.z - b.z) <= float_tol
-                and abs(a.r - b.r) <= float_tol
-            )
-
         def uf_union(a: int, b: int) -> None:
             ra, rb = uf_find(a), uf_find(b)
             if ra == rb:
                 return
-            # Union by rank; tie-breaker on smaller id for stability
             rra, rrb = rank.get(ra, 0), rank.get(rb, 0)
             if rra < rrb or (rra == rrb and ra > rb):
                 ra, rb = rb, ra
@@ -321,139 +360,75 @@ class GeneralModel(nx.Graph):
             parent[rb] = ra
             rank[ra] = max(rra, rrb + 1)
 
-        # Seed UF with all ids
-        for n in records.keys():
-            parent[n] = n
-            rank[n] = 0
+        def identical_xyzr(i: int, j: int) -> bool:
+            ai = self.nodes[i]
+            aj = self.nodes[j]
+            return (
+                abs(ai["x"] - aj["x"]) <= float_tol
+                and abs(ai["y"] - aj["y"]) <= float_tol
+                and abs(ai["z"] - aj["z"]) <= float_tol
+                and abs(ai["r"] - aj["r"]) <= float_tol
+            )
 
-        # Apply merges from reconnection annotations
-        for i, j in result.reconnections:
-            if i not in records or j not in records:
+        # Seed UF with all ids present
+        for n in self.nodes:
+            parent[int(n)] = int(n)
+            rank[int(n)] = 0
+
+        # Apply merges
+        for i, j in pairs:
+            if i not in self.nodes or j not in self.nodes:
                 raise ValueError(
                     f"Reconnection pair ({i}, {j}) refers to undefined node id(s)"
                 )
-            if validate_reconnections:
-                if not identical_xyzr(records[i], records[j]):
-                    raise ValueError(
-                        "Reconnection requires identical (x, y, z, r) but got:\n"
-                        f"  {i}: (x={records[i].x}, y={records[i].y}, z={records[i].z}, r={records[i].r})\n"
-                        f"  {j}: (x={records[j].x}, y={records[j].y}, z={records[j].z}, r={records[j].r})"
-                    )
-            uf_union(i, j)
+            if validate_reconnections and not identical_xyzr(int(i), int(j)):
+                ai = self.nodes[int(i)]
+                aj = self.nodes[int(j)]
+                raise ValueError(
+                    "Reconnection requires identical (x, y, z, r) but got:\n"
+                    f"  {i}: (x={ai['x']}, y={ai['y']}, z={ai['z']}, r={ai['r']})\n"
+                    f"  {j}: (x={aj['x']}, y={aj['y']}, z={aj['z']}, r={aj['r']})"
+                )
+            uf_union(int(i), int(j))
 
         # Build groups by representative
         groups: dict[int, list[int]] = {}
-        for n in records.keys():
-            r = uf_find(n)
-            groups.setdefault(r, []).append(n)
+        for n in self.nodes:
+            r = uf_find(int(n))
+            groups.setdefault(r, []).append(int(n))
 
-        # Create the Graph nodes with merged attributes
-        model = cls()
+        # Create the merged model nodes
+        model = SWCModel()
         for rep, ids in groups.items():
-            # Sort ids for stable ordering and reproducibility
             ids_sorted = sorted(ids)
-            first = records[ids_sorted[0]]
-            # Attributes are taken from the first (coordinates identical by contract)
+            first = self.nodes[ids_sorted[0]]
+            lines = sorted(
+                int(self.nodes[i]["line"])
+                for i in ids_sorted
+                if "line" in self.nodes[i]
+            )
             attrs = {
                 "n": ids_sorted[0],
-                "x": first.x,
-                "y": first.y,
-                "z": first.z,
-                "r": first.r,
-                # Representative type; may vary across merged ids, but keep one for convenience
-                "t": first.t,
-                # Provenance
+                "x": float(first["x"]),
+                "y": float(first["y"]),
+                "z": float(first["z"]),
+                "r": float(first["r"]),
+                "t": int(first["t"]) if "t" in first else first.get("t"),
                 "merged_ids": ids_sorted,
-                "lines": sorted(records[i].line for i in ids_sorted),
+                "lines": lines,
             }
-            model.add_node(rep, **attrs)
+            model.add_node(int(rep), **attrs)
 
         # Add undirected edges between merged representatives (skip self-loops)
-        for rec in records.values():
-            if rec.parent == -1:
+        for n, p in self._parents.items():
+            if p is None:
                 continue
-            u = uf_find(rec.parent)
-            v = uf_find(rec.n)
+            u = uf_find(int(p))
+            v = uf_find(int(n))
             if u != v:
                 model.add_edge(u, v)
 
+        # After merges, original tree mapping is not applicable
+        model._parents = {int(rep): None for rep in groups.keys()}
+        model.graph["reconnections"] = pairs
         return model
-
-    @classmethod
-    def from_swc_file(
-        cls,
-        source: str | os.PathLike[str] | Iterable[str],
-        *,
-        strict: bool = True,
-        validate_reconnections: bool = True,
-        float_tol: float = 1e-9,
-    ) -> "GeneralModel":
-        """Parse an SWC source and build a merged undirected model."""
-        result = parse_swc(
-            source,
-            strict=strict,
-            validate_reconnections=validate_reconnections,
-            float_tol=float_tol,
-        )
-        return cls.from_parse_result(
-            result,
-            validate_reconnections=validate_reconnections,
-            float_tol=float_tol,
-        )
-
-    def print_attributes(self, *, node_info: bool = False, edge_info: bool = False) -> None:
-        """Print graph attributes and optional node/edge details.
-
-        Parameters
-        ----------
-        node_info: bool
-            If True, print per-node attributes (n, x, y, z, r, t, merged_ids, lines where present).
-        edge_info: bool
-            If True, print all edges (u -- v) with edge attributes if any.
-        """
-        info = _graph_attributes(self)
-        header = (
-            f"GeneralModel: nodes={info['nodes']}, edges={info['edges']}, "
-            f"components={info['components']}, cycles={info['cycles']}, "
-            f"branch_points={info['branch_points_count']}, leaves={info['leaves_count']}, "
-            f"self_loops={info['self_loops']}, density={info['density']:.4f}"
-        )
-        print(header)
-
-        if node_info:
-            print("Nodes:")
-            ordered = ["n", "x", "y", "z", "r", "t", "merged_ids", "lines"]
-            for n, attrs in self.nodes(data=True):
-                parts = [f"{k}={attrs[k]}" for k in ordered if k in attrs]
-                print(f"  {n}: " + ", ".join(parts))
-
-        if edge_info:
-            print("Edges:")
-            for u, v, attrs in self.edges(data=True):
-                if attrs:
-                    print(f"  {u} -- {v}: {dict(attrs)}")
-                else:
-                    print(f"  {u} -- {v}")
-
-    def copy(self) -> "GeneralModel":
-        """Return a shallow copy of this model (nodes/edges/attributes)."""
-        return super().copy(as_view=False)
-
-    def scale(self, scalar: float) -> "GeneralModel":
-        """Return a new model with all node coordinates and radii scaled by `scalar`.
-
-        Multiplies each node's `x`, `y`, `z`, and `r` by `scalar` on a copy.
-        """
-        if not isinstance(scalar, (int, float)):
-            raise TypeError("scalar must be a number")
-        new = self.copy()
-        for _, attrs in new.nodes(data=True):
-            if "x" in attrs:
-                attrs["x"] *= scalar
-            if "y" in attrs:
-                attrs["y"] *= scalar
-            if "z" in attrs:
-                attrs["z"] *= scalar
-            if "r" in attrs:
-                attrs["r"] *= scalar
-        return new
