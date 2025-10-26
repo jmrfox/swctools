@@ -16,6 +16,7 @@ from typing import Iterable, List, Sequence, Tuple, Any, Optional, Union, Mappin
 import os
 import io
 import math
+import numpy as np
 
 # Types
 Point3 = Tuple[float, float, float]
@@ -370,61 +371,19 @@ class PointSet:
         )
 
     @classmethod
-    def from_txt(
+    def from_txt_file(
         cls,
-        source: Union[str, os.PathLike, Iterable[str], io.TextIOBase],
+        path: Union[str, os.PathLike],
         *,
         base_radius: float = 1.0,
         stacks: int = 6,
         slices: int = 12,
-        allow_extra_columns: bool = True,
+        comments: str = "#",
     ) -> "PointSet":
-        """Load a simple text format with `x y z` coordinates per non-empty line.
-
-        - Lines beginning with `#` or blank lines are ignored.
-        - If `allow_extra_columns=True`, extra columns after the first three are ignored.
-        - Raises `ValueError` on malformed lines.
-        """
-
-        # Normalize to an iterator of lines
-        lines: Iterable[str]
-        if hasattr(source, "read"):
-            # file-like or IO stream; iterating yields lines
-            lines = source  # type: ignore[assignment]
-        elif isinstance(source, (str, os.PathLike)):
-            # path or text
-            p = str(source)
-            if os.path.exists(p):
-                with open(p, "r", encoding="utf-8") as f:
-                    content = f.read().splitlines()
-                lines = content
-            else:
-                lines = str(source).splitlines()
-        else:
-            lines = source
-
-        pts: List[Point3] = []
-        for idx, raw in enumerate(lines, start=1):
-            s = raw.strip()
-            if not s or s.startswith("#"):
-                continue
-            parts = s.split()
-            if len(parts) < 3:
-                raise ValueError(
-                    f"Line {idx}: expected at least 3 columns for x y z, got {len(parts)}"
-                )
-            if not allow_extra_columns and len(parts) != 3:
-                raise ValueError(
-                    f"Line {idx}: expected exactly 3 columns for x y z, got {len(parts)}"
-                )
-            try:
-                x = float(parts[0])
-                y = float(parts[1])
-                z = float(parts[2])
-            except Exception as e:
-                raise ValueError(f"Line {idx}: could not parse floats: {e}")
-            pts.append((x, y, z))
-
+        arr = np.loadtxt(path, comments=comments, usecols=(0, 1, 2))
+        if getattr(arr, "ndim", 1) == 1:
+            arr = arr.reshape(1, 3)
+        pts = [tuple(map(float, row)) for row in arr]
         return cls.from_points(
             pts, base_radius=base_radius, stacks=stacks, slices=slices
         )
@@ -440,6 +399,10 @@ class PointSet:
         j = [f[1] for f in self.faces]
         k = [f[2] for f in self.faces]
         return x, y, z, i, j, k
+
+    def to_txt_file(self, path: Union[str, os.PathLike]) -> None:
+        arr = np.asarray(self.points, dtype=float)
+        np.savetxt(path, arr, fmt="%.6f", delimiter=" ")
 
     def scaled(self, radius_scale: float) -> "PointSet":
         """Return a new `PointSet` with all sphere radii scaled by `radius_scale`."""
