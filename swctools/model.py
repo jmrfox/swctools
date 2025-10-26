@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Iterable, Mapping, Any
 import os
 import networkx as nx
+import logging
 
 from .io import SWCRecord, SWCParseResult, parse_swc
 
@@ -101,11 +102,17 @@ class SWCModel(nx.Graph):
     @classmethod
     def from_parse_result(cls, result: SWCParseResult) -> "SWCModel":
         """Build a model from a parsed SWC result."""
+        logger = logging.getLogger(__name__)
         model = cls.from_records(result.records)
         try:
             model.graph["reconnections"] = list(result.reconnections)
         except Exception:
             model.graph["reconnections"] = []
+        logger.info(
+            "SWCModel.from_parse_result records=%d reconnections=%d",
+            len(result.records),
+            len(result.reconnections),
+        )
         return model
 
     @classmethod
@@ -116,6 +123,7 @@ class SWCModel(nx.Graph):
 
         Accepts either a mapping of id->record or any iterable of SWCRecord.
         """
+        logger = logging.getLogger(__name__)
         model = cls()
 
         # Materialize to a list once so we can iterate twice safely
@@ -162,13 +170,22 @@ class SWCModel(nx.Graph):
         The `source` is passed through to `parse_swc`, which supports a path,
         a file-like object, a string with the full contents, or an iterable of lines.
         """
+        logger = logging.getLogger(__name__)
         result = parse_swc(
             source,
             strict=strict,
             validate_reconnections=validate_reconnections,
             float_tol=float_tol,
         )
-        return cls.from_parse_result(result)
+        model = cls.from_parse_result(result)
+        logger.info(
+            "SWCModel.from_swc_file built nodes=%d edges=%d strict=%s validate_reconnections=%s",
+            model.number_of_nodes(),
+            model.number_of_edges(),
+            strict,
+            validate_reconnections,
+        )
+        return model
 
     # ----------------------------------------------------------------------------------------------
     # Convenience queries
@@ -235,6 +252,7 @@ class SWCModel(nx.Graph):
 
     def copy(self) -> "SWCModel":
         """Return a shallow copy of this model (nodes/edges/attributes)."""
+        logger = logging.getLogger(__name__)
         new = super().copy(as_view=False)
         # Preserve original tree parent mapping on the copy
         try:
@@ -246,7 +264,15 @@ class SWCModel(nx.Graph):
             nm.add_edges_from(new.edges(data=True))
             nm.graph.update(dict(new.graph))
             nm._parents = dict(self._parents)
+            logger.debug(
+                "SWCModel.copy reconstructed fallback nodes=%d edges=%d",
+                nm.number_of_nodes(),
+                nm.number_of_edges(),
+            )
             return nm
+        logger.debug(
+            "SWCModel.copy nodes=%d edges=%d", new.number_of_nodes(), new.number_of_edges()
+        )
         return new
 
     def to_swc_file(
@@ -274,6 +300,7 @@ class SWCModel(nx.Graph):
         header: Iterable[str] | None
             Optional additional header comment lines (without leading '#').
         """
+        logger = logging.getLogger(__name__)
         if not isinstance(precision, int) or precision < 0:
             raise ValueError("precision must be a non-negative integer")
 
@@ -311,12 +338,20 @@ class SWCModel(nx.Graph):
                 parent = self._parents.get(n)
                 pval = -1 if parent is None else int(parent)
                 f.write(f"{n} {t} {x} {y} {z} {r} {pval}\n")
+        logger.info(
+            "SWCModel.to_swc_file wrote path=%s nodes=%d edges=%d header_lines=%d",
+            os.fspath(path),
+            self.number_of_nodes(),
+            self.number_of_edges(),
+            len(header_lines),
+        )
 
     def scale(self, scalar: float) -> "SWCModel":
         """Return a new model with all node coordinates and radii scaled by `scalar`.
 
         Multiplies each node's `x`, `y`, `z`, and `r` by `scalar` on a copy.
         """
+        logger = logging.getLogger(__name__)
         if not isinstance(scalar, (int, float)):
             raise TypeError("scalar must be a number")
         new = self.copy()
@@ -343,8 +378,10 @@ class SWCModel(nx.Graph):
         Node attributes are merged; provenance kept under `merged_ids` and `lines`.
         After merges, the original tree parent mapping no longer applies and parents are set to None.
         """
+        logger = logging.getLogger(__name__)
         pairs = list(self.graph.get("reconnections", []))
         if not pairs:
+            logger.info("make_cycle_connections no pairs; returning copy")
             return self.copy()
 
         parent: dict[int, int] = {}
@@ -441,4 +478,11 @@ class SWCModel(nx.Graph):
         # After merges, original tree mapping is not applicable
         model._parents = {int(rep): None for rep in groups.keys()}
         model.graph["reconnections"] = pairs
+        logger.info(
+            "make_cycle_connections merged=%d groups=%d nodes=%d edges=%d",
+            len(pairs),
+            len(groups),
+            model.number_of_nodes(),
+            model.number_of_edges(),
+        )
         return model

@@ -34,6 +34,7 @@ from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Union
 import io
 import os
 import re
+import logging
 
 
 # Public data structures -------------------------------------------------------------------------
@@ -127,6 +128,14 @@ def parse_swc(
     FileNotFoundError
         If a string path is provided that does not exist.
     """
+    logger = logging.getLogger(__name__)
+    logger.info(
+        "parse_swc start strict=%s validate_reconnections=%s float_tol=%s",
+        strict,
+        validate_reconnections,
+        float_tol,
+    )
+
     records: Dict[int, SWCRecord] = {}
     comments: List[str] = []
     reconnections: List[Tuple[int, int]] = []
@@ -144,6 +153,7 @@ def parse_swc(
                 # Normalize order for stable results
                 a, b = sorted((i, j))
                 reconnections.append((a, b))
+                logger.debug("reconnect header i=%d j=%d line=%d", i, j, lineno)
             continue
 
         parts = line.split()
@@ -165,6 +175,7 @@ def parse_swc(
             r = float(parts[5])
             parent = int(_coerce_int(parts[6]))
         except Exception as e:  # noqa: BLE001
+            logger.debug("failed to parse values at line %d: %s", lineno, e)
             raise ValueError(f"Line {lineno}: failed to parse values -> {e}") from e
 
         if n in records:
@@ -205,6 +216,12 @@ def parse_swc(
                     f"  {b}: (x={rb.x}, y={rb.y}, z={rb.z}, r={rb.r})"
                 )
 
+    logger.info(
+        "parse_swc done records=%d reconnections=%d comments=%d",
+        len(records),
+        len(reconnections),
+        len(comments),
+    )
     return SWCParseResult(
         records=records, reconnections=reconnections, comments=comments
     )

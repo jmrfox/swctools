@@ -3,6 +3,8 @@
 Public API is evolving; currently exposes SWC parsing, models, geometry, and visualization utilities.
 """
 
+import logging
+
 from .io import SWCRecord, SWCParseResult, parse_swc
 from .model import SWCModel
 from .geometry import Segment, frustum_mesh, batch_frusta, FrustaSet, PointSet
@@ -15,6 +17,7 @@ from .viz import (
     plot_frusta_timeseries,
 )
 from .config import get_config, set_config, apply_layout
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __all__ = [
     "SWCRecord",

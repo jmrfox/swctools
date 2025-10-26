@@ -17,6 +17,7 @@ import os
 import io
 import math
 import numpy as np
+import logging
 
 # Types
 Point3 = Tuple[float, float, float]
@@ -209,6 +210,14 @@ def frustum_mesh(
             b1 = ((i + 1) % sides) + sides
             faces.append((cb, b0, b1))
 
+    logger = logging.getLogger(__name__)
+    logger.debug(
+        "frustum_mesh sides=%d end_caps=%s verts=%d faces=%d",
+        sides,
+        end_caps,
+        len(vertices),
+        len(faces),
+    )
     return vertices, faces
 
 
@@ -230,6 +239,15 @@ def batch_frusta(
         all_faces.extend([(a + offset, b + offset, c + offset) for (a, b, c) in f])
         offset += len(v)
 
+    logger = logging.getLogger(__name__)
+    logger.info(
+        "batch_frusta count=%d sides=%d end_caps=%s verts=%d faces=%d",
+        len(list(segments)) if isinstance(segments, list) else -1,
+        sides,
+        end_caps,
+        len(all_vertices),
+        len(all_faces),
+    )
     return all_vertices, all_faces
 
 
@@ -304,6 +322,14 @@ def sphere_mesh(
         b = vid(base, j + 1)
         faces.append((south_idx, b, a))
 
+    logger = logging.getLogger(__name__)
+    logger.debug(
+        "sphere_mesh stacks=%d slices=%d verts=%d faces=%d",
+        stacks,
+        slices,
+        len(verts),
+        len(faces),
+    )
     return verts, faces
 
 
@@ -324,6 +350,15 @@ def batch_spheres(
         all_faces.extend([(a + offset, b + offset, c + offset) for (a, b, c) in f])
         offset += len(v)
 
+    logger = logging.getLogger(__name__)
+    logger.info(
+        "batch_spheres count=%d stacks=%d slices=%d verts=%d faces=%d",
+        len(list(points)) if isinstance(points, list) else -1,
+        stacks,
+        slices,
+        len(all_vertices),
+        len(all_faces),
+    )
     return all_vertices, all_faces
 
 
@@ -358,8 +393,16 @@ class PointSet:
         stacks, slices: int
             Sphere tessellation parameters (>=2 and >=3 respectively).
         """
+        logger = logging.getLogger(__name__)
         verts, faces = batch_spheres(
             points, radius=base_radius, stacks=stacks, slices=slices
+        )
+        logger.info(
+            "PointSet.from_points n=%d base_radius=%s stacks=%d slices=%d",
+            len(points),
+            base_radius,
+            stacks,
+            slices,
         )
         return cls(
             vertices=verts,
@@ -380,10 +423,16 @@ class PointSet:
         slices: int = 12,
         comments: str = "#",
     ) -> "PointSet":
-        arr = np.loadtxt(path, comments=comments, usecols=(0, 1, 2))
+        logger = logging.getLogger(__name__)
+        try:
+            arr = np.loadtxt(path, comments=comments, usecols=(0, 1, 2))
+        except Exception as e:
+            logger.error("PointSet.from_txt_file failed: %s", e)
+            return None
         if getattr(arr, "ndim", 1) == 1:
             arr = arr.reshape(1, 3)
         pts = [tuple(map(float, row)) for row in arr]
+        logger.info("PointSet.from_txt_file path=%s n=%d", os.fspath(path), len(pts))
         return cls.from_points(
             pts, base_radius=base_radius, stacks=stacks, slices=slices
         )
@@ -402,16 +451,21 @@ class PointSet:
 
     def to_txt_file(self, path: Union[str, os.PathLike]) -> None:
         arr = np.asarray(self.points, dtype=float)
-        np.savetxt(path, arr, fmt="%.6f", delimiter=" ")
+        try:
+            np.savetxt(path, arr, fmt="%.6f", delimiter=" ")
+        except Exception as e:
+            logging.getLogger(__name__).error("PointSet.to_txt_file failed: %s", e)
 
     def scaled(self, radius_scale: float) -> "PointSet":
         """Return a new `PointSet` with all sphere radii scaled by `radius_scale`."""
         if radius_scale == 1.0:
             return self
         r = self.base_radius * radius_scale
+        logger = logging.getLogger(__name__)
         verts, faces = batch_spheres(
             self.points, radius=r, stacks=self.stacks, slices=self.slices
         )
+        logger.info("PointSet.scaled radius_scale=%s", radius_scale)
         return PointSet(
             vertices=verts,
             faces=faces,
@@ -431,9 +485,11 @@ class PointSet:
             (p[0] * scalar, p[1] * scalar, p[2] * scalar) for p in self.points
         ]
         new_radius = self.base_radius * scalar
+        logger = logging.getLogger(__name__)
         verts, faces = batch_spheres(
             new_points, radius=new_radius, stacks=self.stacks, slices=self.slices
         )
+        logger.info("PointSet.scale scalar=%s", scalar)
         return PointSet(
             vertices=verts,
             faces=faces,
@@ -479,12 +535,19 @@ class PointSet:
         Complexity is O(N_points × N_segments), implemented in pure Python.
         """
         # Resolve whether to include end-cap projections (explicit flag overrides frusta setting)
+        logger = logging.getLogger(__name__)
         use_caps = frusta.end_caps if include_end_caps is None else include_end_caps
         eps = 1e-12
         # Accumulate the new, projected points in order
         new_points: List[Point3] = []
+        logger.info(
+            "project_onto_frusta points=%d segments=%d use_caps=%s",
+            len(self.points),
+            frusta.segment_count,
+            use_caps,
+        )
         # For each input point, search all frusta and keep the closest surface point
-        for p in self.points:
+        for idx, p in enumerate(self.points):
             best_q: Optional[Point3] = None
             best_d2 = float("inf")
             # Check every frustum segment
@@ -578,11 +641,25 @@ class PointSet:
                         best_d2 = d2_cb
                         best_q = q_cb
             # Accept the best (closest) candidate for this point
-            new_points.append(best_q if best_q is not None else p)
+            if best_q is not None:
+                moved = v_norm(v_sub(best_q, p))
+                logger.debug(
+                    "project_onto_frusta point=%d moved=%.6f on_surface=True",
+                    idx,
+                    moved,
+                )
+                new_points.append(best_q)
+            else:
+                logger.debug(
+                    "project_onto_frusta point=%d moved=0.000000 on_surface=False",
+                    idx,
+                )
+                new_points.append(p)
         # Rebuild sphere mesh centered at the moved points
         verts, faces = batch_spheres(
             new_points, radius=self.base_radius, stacks=self.stacks, slices=self.slices
         )
+        logger.info("project_onto_frusta done moved_points=%d", len(new_points))
         return PointSet(
             vertices=verts,
             faces=faces,
@@ -647,7 +724,14 @@ class FrustaSet:
             segments.append(Segment(a=(xu, yu, zu), b=(xv, yv, zv), ra=ru, rb=rv))
             edge_uvs.append((int(u), int(v)))
 
+        logger = logging.getLogger(__name__)
         vertices, faces = batch_frusta(segments, sides=sides, end_caps=end_caps)
+        logger.info(
+            "FrustaSet.from_swc_model edges=%d sides=%d end_caps=%s",
+            len(segments),
+            sides,
+            end_caps,
+        )
         return cls(
             vertices=vertices,
             faces=faces,
@@ -678,6 +762,7 @@ class FrustaSet:
         """
         if radius_scale == 1.0:
             return self
+        logger = logging.getLogger(__name__)
         scaled_segments = [
             Segment(a=s.a, b=s.b, ra=s.ra * radius_scale, rb=s.rb * radius_scale)
             for s in self.segments
@@ -685,6 +770,7 @@ class FrustaSet:
         vertices, faces = batch_frusta(
             scaled_segments, sides=self.sides, end_caps=self.end_caps
         )
+        logger.info("FrustaSet.scaled radius_scale=%s", radius_scale)
         return FrustaSet(
             vertices=vertices,
             faces=faces,
@@ -698,6 +784,7 @@ class FrustaSet:
 
     def scale(self, scalar: float) -> "FrustaSet":
         """Return a new `FrustaSet` with coordinates and radii scaled by `scalar`."""
+        logger = logging.getLogger(__name__)
         if not isinstance(scalar, (int, float)):
             raise TypeError("scalar must be a number")
         if scalar == 1.0:
@@ -714,6 +801,7 @@ class FrustaSet:
         vertices, faces = batch_frusta(
             scaled_segments, sides=self.sides, end_caps=self.end_caps
         )
+        logger.info("FrustaSet.scale scalar=%s", scalar)
         return FrustaSet(
             vertices=vertices,
             faces=faces,
@@ -766,6 +854,7 @@ class FrustaSet:
             assert all(i is not None for i in inv)
             new_order = [int(i) for i in inv]  # type: ignore
 
+        logger = logging.getLogger(__name__)
         if new_order is None:
             raise ValueError("Provide either new_order or label_remap")
 
@@ -780,6 +869,7 @@ class FrustaSet:
         vertices, faces = batch_frusta(
             segs_new, sides=self.sides, end_caps=self.end_caps
         )
+        logger.info("FrustaSet.reordered n=%d", n)
         return FrustaSet(
             vertices=vertices,
             faces=faces,
@@ -801,6 +891,12 @@ class FrustaSet:
             slices.append((face_offset, count))
             face_offset += count
         if face_offset != len(self.faces):
+            logger = logging.getLogger(__name__)
+            logger.debug(
+                "per_segment_face_slices mismatch faces_computed=%d faces_total=%d",
+                face_offset,
+                len(self.faces),
+            )
             return slices
         return slices
 

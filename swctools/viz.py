@@ -9,9 +9,22 @@ from __future__ import annotations
 from typing import Optional, Sequence
 
 import plotly.graph_objects as go
+import logging
+from contextlib import contextmanager
 
 from .geometry import FrustaSet, PointSet
 from .config import apply_layout
+
+
+# @contextmanager
+# def _suppress_geometry_logs():
+#     lg = logging.getLogger("swctools.geometry")
+#     prev_level = lg.level
+#     try:
+#         lg.setLevel(max(logging.WARNING, prev_level or 0))
+#         yield
+#     finally:
+#         lg.setLevel(prev_level)
 
 
 def plot_centroid(
@@ -21,6 +34,7 @@ def plot_centroid(
 
     Edges are drawn as line segments in 3D using Scatter3d.
     """
+    logger = logging.getLogger(__name__)
     xs = []
     ys = []
     zs = []
@@ -58,6 +72,7 @@ def plot_centroid(
 
     fig = go.Figure(data=data)
     apply_layout(fig, title="Centroid Skeleton")
+    logger.info("plot_centroid edges=%d show_nodes=%s", len(list(gm.edges)), show_nodes)
     return fig
 
 
@@ -84,6 +99,7 @@ def plot_frusta(
     radius_scale: float
         Uniform scale applied to all segment radii before meshing (1.0 = no change).
     """
+    logger = logging.getLogger(__name__)
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
     mesh = go.Mesh3d(
@@ -99,6 +115,12 @@ def plot_frusta(
     )
     fig = go.Figure(data=[mesh])
     apply_layout(fig, title="Frusta Mesh")
+    logger.info(
+        "plot_frusta segments=%d radius_scale=%s flatshading=%s",
+        frusta.segment_count,
+        radius_scale,
+        flatshading,
+    )
     return fig
 
 
@@ -119,6 +141,7 @@ def plot_frusta_with_centroid(
 
     Parameters mirror `plot_centroid` and `plot_frusta` with an extra `radius_scale`.
     """
+    logger = logging.getLogger(__name__)
     # Build centroid polyline
     xs, ys, zs = [], [], []
     for u, v in gm.edges:
@@ -168,6 +191,12 @@ def plot_frusta_with_centroid(
 
     fig = go.Figure(data=traces)
     apply_layout(fig, title="Centroid + Frusta")
+    logger.info(
+        "plot_frusta_with_centroid edges=%d segments=%d radius_scale=%s",
+        len(list(gm.edges)),
+        frusta.segment_count,
+        radius_scale,
+    )
     return fig
 
 
@@ -185,6 +214,7 @@ def plot_frusta_slider(
 
     Precomputes frames at evenly spaced scales between `min_scale` and `max_scale`.
     """
+    logger = logging.getLogger(__name__)
     steps = max(2, int(steps))
     span = max_scale - min_scale
     scales = [min_scale + (span * k / (steps - 1)) for k in range(steps)]
@@ -199,6 +229,7 @@ def plot_frusta_slider(
     else:
         init_idx = 0
     init_scale = scales[init_idx]
+    # with _suppress_geometry_logs():
     init_fr = base if init_scale == 1.0 else base.scaled(init_scale)
     x0, y0, z0, _, _, _ = init_fr.to_mesh3d_arrays()
 
@@ -216,6 +247,7 @@ def plot_frusta_slider(
     )
 
     frames = []
+    # with _suppress_geometry_logs():
     for s in scales:
         fr_s = base if s == 1.0 else base.scaled(s)
         xs, ys, zs, _, _, _ = fr_s.to_mesh3d_arrays()
@@ -303,6 +335,13 @@ def plot_frusta_slider(
     fig = go.Figure(data=[mesh], frames=frames)
     apply_layout(fig, title="Frusta Mesh — radius_scale slider")
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
+    logger.info(
+        "plot_frusta_slider segments=%d scales=%d min=%s max=%s",
+        frusta.segment_count,
+        len(scales),
+        min_scale,
+        max_scale,
+    )
     return fig
 
 
@@ -342,6 +381,7 @@ def plot_model(
     - `points` overlays arbitrary xyz positions as small markers.
     """
 
+    logger = logging.getLogger(__name__)
     traces: list[go.BaseTraceType] = []
     frames: list[go.Frame] | None = None
 
@@ -421,6 +461,7 @@ def plot_model(
             else:
                 init_idx = 0
             init_scale = scales[init_idx]
+            # with _suppress_geometry_logs():
             init_fr = base_fr if init_scale == 1.0 else base_fr.scaled(init_scale)
             x0, y0, z0, _, _, _ = init_fr.to_mesh3d_arrays()
 
@@ -441,6 +482,7 @@ def plot_model(
             traces = [mesh] + traces
 
             frames = []
+            # with _suppress_geometry_logs():
             for s in scales:
                 fr_s = base_fr if s == 1.0 else base_fr.scaled(s)
                 xs, ys, zs, _, _, _ = fr_s.to_mesh3d_arrays()
@@ -527,6 +569,12 @@ def plot_model(
             fig = go.Figure(data=traces, frames=frames)
             apply_layout(fig, title="Model")
             fig.update_layout(sliders=sliders, updatemenus=updatemenus)
+            logger.info(
+                "plot_model slider=True segments=%d radius_scale_range=[%s,%s]",
+                base_fr.segment_count,
+                min_scale,
+                max_scale,
+            )
             return fig
         else:
             # Static radius scale
@@ -548,6 +596,12 @@ def plot_model(
 
     fig = go.Figure(data=traces)
     apply_layout(fig, title="Model")
+    logger.info(
+        "plot_model slider=False segments=%s show_frusta=%s show_centroid=%s",
+        base_fr.segment_count if base_fr is not None else None,
+        show_frusta,
+        show_centroid,
+    )
     return fig
 
 
