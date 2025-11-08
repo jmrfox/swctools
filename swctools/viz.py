@@ -33,6 +33,7 @@ def plot_centroid(
     marker_size: float = 2.0,
     line_width: float = 2.0,
     show_nodes: bool = True,
+    title: str | None = None,
 ) -> go.Figure:
     """Plot centroid skeleton from an `SWCModel`.
 
@@ -75,7 +76,7 @@ def plot_centroid(
         data.append(node_trace)
 
     fig = go.Figure(data=data)
-    apply_layout(fig, title="Centroid Skeleton")
+    apply_layout(fig, title=title or "Centroid Skeleton")
     logger.info(
         "plot_centroid edges=%d show_nodes=%s", len(list(swc_model.edges)), show_nodes
     )
@@ -90,6 +91,7 @@ def plot_frusta(
     flatshading: bool = True,
     radius_scale: float = 1.0,
     tag_colors: dict[int, str] | None = None,
+    title: str | None = None,
 ) -> go.Figure:
     """Plot a FrustaSet as a Mesh3d figure.
 
@@ -142,7 +144,7 @@ def plot_frusta(
             flatshading=flatshading,
         )
     fig = go.Figure(data=[mesh])
-    apply_layout(fig, title="Frusta Mesh")
+    apply_layout(fig, title=title or "Frusta Mesh")
     logger.info(
         "plot_frusta segments=%d radius_scale=%s flatshading=%s",
         frusta.segment_count,
@@ -165,6 +167,7 @@ def plot_frusta_with_centroid(
     centroid_line_width: float = 2.0,
     show_nodes: bool = False,
     node_size: float = 2.0,
+    title: str | None = None,
 ) -> go.Figure:
     """Overlay frusta mesh with centroid skeleton from an `SWCModel`.
 
@@ -238,7 +241,7 @@ def plot_frusta_with_centroid(
     traces.append(mesh)
 
     fig = go.Figure(data=traces)
-    apply_layout(fig, title="Centroid + Frusta")
+    apply_layout(fig, title=title or "Centroid + Frusta")
     logger.info(
         "plot_frusta_with_centroid edges=%d segments=%d radius_scale=%s",
         len(list(swc_model.edges)),
@@ -258,6 +261,7 @@ def plot_frusta_slider(
     min_scale: float = 0.0,
     max_scale: float = 1.0,
     steps: int = 21,
+    title: str | None = None,
 ) -> go.Figure:
     """Interactive slider (0..1 default) controlling uniform `radius_scale`.
 
@@ -421,7 +425,7 @@ def plot_frusta_slider(
     ]
 
     fig = go.Figure(data=[mesh], frames=frames)
-    apply_layout(fig, title="Frusta Mesh — radius_scale slider")
+    apply_layout(fig, title=title or "Frusta Mesh — radius_scale slider")
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
     logger.info(
         "plot_frusta_slider segments=%d scales=%d min=%s max=%s",
@@ -439,6 +443,7 @@ def plot_model(
     frusta: FrustaSet | None = None,
     show_frusta: bool = True,
     show_centroid: bool = True,
+    title: str | None = None,
     # Frusta build options (used if frusta is None and gm provided)
     sides: int = 16,
     end_caps: bool = False,
@@ -695,7 +700,7 @@ def plot_model(
             ]
 
             fig = go.Figure(data=traces, frames=frames)
-            apply_layout(fig, title="Model")
+            apply_layout(fig, title=title or "Model")
             fig.update_layout(sliders=sliders, updatemenus=updatemenus)
             logger.info(
                 "plot_model slider=True segments=%d radius_scale_range=[%s,%s]",
@@ -742,7 +747,7 @@ def plot_model(
             traces.insert(0, mesh)  # keep mesh on bottom for visibility
 
     fig = go.Figure(data=traces)
-    apply_layout(fig, title="Model")
+    apply_layout(fig, title=title or "Model")
     logger.info(
         "plot_model slider=False segments=%s show_frusta=%s show_centroid=%s",
         base_fr.segment_count if base_fr is not None else None,
@@ -763,6 +768,7 @@ def plot_frusta_timeseries(
     flatshading: bool = True,
     radius_scale: float = 1.0,
     fps: int = 10,
+    title: str | None = None,
 ) -> go.Figure:
     """Animate per-segment values over time by coloring frusta faces.
 
@@ -920,6 +926,6 @@ def plot_frusta_timeseries(
         }
     ]
     fig = go.Figure(data=[mesh], frames=frames)
-    apply_layout(fig, title="Frusta timeseries")
+    apply_layout(fig, title=title or "Frusta timeseries")
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
     return fig
