@@ -86,6 +86,7 @@ class Segment:
     b: Point3
     ra: float
     rb: float
+    tag: int
 
     def vector(self) -> Vec3:
         return v_sub(self.b, self.a)
@@ -111,6 +112,7 @@ class Segment:
             b=(bx * scalar, by * scalar, bz * scalar),
             ra=self.ra * scalar,
             rb=self.rb * scalar,
+            tag=self.tag,
         )
 
 
@@ -710,10 +712,22 @@ class FrustaSet:
         *,
         sides: int = 16,
         end_caps: bool = False,
+        flip_tag_assignment: bool = False,
     ) -> "FrustaSet":
         """Build a `FrustaSet` by converting each undirected edge into a `Segment`.
 
         Expects nodes to have attributes `x, y, z, r`.
+
+        Parameters
+        ----------
+        model: SWCModel
+            The model to convert.
+        sides: int
+            Number of sides per frustum.
+        end_caps: bool
+            Whether to include end caps.
+        flip_tag_assignment: bool
+            If True, assign tags from the child node to the parent node. Otherwise, assign tags from the parent node to the child node.
         """
         segments: List[Segment] = []
         edge_uvs: List[Tuple[int, int]] = []
@@ -721,7 +735,12 @@ class FrustaSet:
             xu, yu, zu = model.nodes[u]["x"], model.nodes[u]["y"], model.nodes[u]["z"]
             xv, yv, zv = model.nodes[v]["x"], model.nodes[v]["y"], model.nodes[v]["z"]
             ru, rv = float(model.nodes[u]["r"]), float(model.nodes[v]["r"])
-            segments.append(Segment(a=(xu, yu, zu), b=(xv, yv, zv), ra=ru, rb=rv))
+            tag = model.nodes[u]["t"]
+            if flip_tag_assignment:
+                tag = model.nodes[v]["t"]
+            segments.append(
+                Segment(a=(xu, yu, zu), b=(xv, yv, zv), ra=ru, rb=rv, tag=tag)
+            )
             edge_uvs.append((int(u), int(v)))
 
         logger = logging.getLogger(__name__)
@@ -764,7 +783,9 @@ class FrustaSet:
             return self
         logger = logging.getLogger(__name__)
         scaled_segments = [
-            Segment(a=s.a, b=s.b, ra=s.ra * radius_scale, rb=s.rb * radius_scale)
+            Segment(
+                a=s.a, b=s.b, ra=s.ra * radius_scale, rb=s.rb * radius_scale, tag=s.tag
+            )
             for s in self.segments
         ]
         vertices, faces = batch_frusta(
@@ -795,6 +816,7 @@ class FrustaSet:
                 b=(s.b[0] * scalar, s.b[1] * scalar, s.b[2] * scalar),
                 ra=s.ra * scalar,
                 rb=s.rb * scalar,
+                tag=s.tag,
             )
             for s in self.segments
         ]

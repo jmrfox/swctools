@@ -32,7 +32,7 @@ Demo notebooks can be found in the `notebooks` directory.
 
 - `SWCModel` (`networkx.Graph` with parent map)
   - Nodes keyed by SWC id `n`
-  - Node attributes: `x`, `y`, `z`, `r`, `t` (type), and optional metadata
+  - Node attributes: `x`, `y`, `z`, `r` (radius), `t` (tag), and optional metadata
   - `_parents` preserves the original directed parent of each node; `roots()`, `parent_of()`, `path_to_root()` use this map
   - `make_cycle_connections()` merges reconnection pairs and returns a merged model (can include cycles)
 - `Segment` dataclass and `FrustaSet` (batched frusta mesh)

@@ -28,7 +28,11 @@ from .config import apply_layout
 
 
 def plot_centroid(
-    gm, *, marker_size: float = 2.0, line_width: float = 2.0, show_nodes: bool = True
+    swc_model: SWCModel,
+    *,
+    marker_size: float = 2.0,
+    line_width: float = 2.0,
+    show_nodes: bool = True,
 ) -> go.Figure:
     """Plot centroid skeleton from an `SWCModel`.
 
@@ -40,10 +44,10 @@ def plot_centroid(
     zs = []
 
     # Build polyline segments with None separators for Plotly
-    for u, v in gm.edges:
-        xs.extend([gm.nodes[u]["x"], gm.nodes[v]["x"], None])
-        ys.extend([gm.nodes[u]["y"], gm.nodes[v]["y"], None])
-        zs.extend([gm.nodes[u]["z"], gm.nodes[v]["z"], None])
+    for u, v in swc_model.edges:
+        xs.extend([swc_model.nodes[u]["x"], swc_model.nodes[v]["x"], None])
+        ys.extend([swc_model.nodes[u]["y"], swc_model.nodes[v]["y"], None])
+        zs.extend([swc_model.nodes[u]["z"], swc_model.nodes[v]["z"], None])
 
     edge_trace = go.Scatter3d(
         x=xs,
@@ -57,9 +61,9 @@ def plot_centroid(
     data = [edge_trace]
 
     if show_nodes:
-        xn = [gm.nodes[n]["x"] for n in gm.nodes]
-        yn = [gm.nodes[n]["y"] for n in gm.nodes]
-        zn = [gm.nodes[n]["z"] for n in gm.nodes]
+        xn = [swc_model.nodes[n]["x"] for n in swc_model.nodes]
+        yn = [swc_model.nodes[n]["y"] for n in swc_model.nodes]
+        zn = [swc_model.nodes[n]["z"] for n in swc_model.nodes]
         node_trace = go.Scatter3d(
             x=xn,
             y=yn,
@@ -72,7 +76,9 @@ def plot_centroid(
 
     fig = go.Figure(data=data)
     apply_layout(fig, title="Centroid Skeleton")
-    logger.info("plot_centroid edges=%d show_nodes=%s", len(list(gm.edges)), show_nodes)
+    logger.info(
+        "plot_centroid edges=%d show_nodes=%s", len(list(swc_model.edges)), show_nodes
+    )
     return fig
 
 
@@ -83,6 +89,7 @@ def plot_frusta(
     opacity: float = 0.8,
     flatshading: bool = True,
     radius_scale: float = 1.0,
+    tag_colors: dict[int, str] | None = None,
 ) -> go.Figure:
     """Plot a FrustaSet as a Mesh3d figure.
 
@@ -98,21 +105,42 @@ def plot_frusta(
         Whether to enable flat shading.
     radius_scale: float
         Uniform scale applied to all segment radii before meshing (1.0 = no change).
+    tag_colors: dict[int, str] | None
+        Optional mapping {tag: color}. If provided, each frustum segment is colored
+        uniformly according to its tag (fallback to `color` if a tag is missing).
     """
     logger = logging.getLogger(__name__)
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
-    mesh = go.Mesh3d(
-        x=x,
-        y=y,
-        z=z,
-        i=i,
-        j=j,
-        k=k,
-        color=color,
-        opacity=opacity,
-        flatshading=flatshading,
-    )
+    if tag_colors is not None:
+        slices = fr.per_segment_face_slices()
+        facecolor: list[str] = []
+        for (start, count), seg in zip(slices, fr.segments):
+            c = tag_colors.get(seg.tag, color)
+            facecolor.extend([c] * count)
+        mesh = go.Mesh3d(
+            x=x,
+            y=y,
+            z=z,
+            i=i,
+            j=j,
+            k=k,
+            facecolor=facecolor,
+            opacity=opacity,
+            flatshading=flatshading,
+        )
+    else:
+        mesh = go.Mesh3d(
+            x=x,
+            y=y,
+            z=z,
+            i=i,
+            j=j,
+            k=k,
+            color=color,
+            opacity=opacity,
+            flatshading=flatshading,
+        )
     fig = go.Figure(data=[mesh])
     apply_layout(fig, title="Frusta Mesh")
     logger.info(
@@ -125,13 +153,14 @@ def plot_frusta(
 
 
 def plot_frusta_with_centroid(
-    gm,
+    swc_model: SWCModel,
     frusta: FrustaSet,
     *,
     color: str = "lightblue",
     opacity: float = 0.8,
     flatshading: bool = True,
     radius_scale: float = 1.0,
+    tag_colors: dict[int, str] | None = None,
     centroid_color: str = "#1f77b4",
     centroid_line_width: float = 2.0,
     show_nodes: bool = False,
@@ -144,10 +173,10 @@ def plot_frusta_with_centroid(
     logger = logging.getLogger(__name__)
     # Build centroid polyline
     xs, ys, zs = [], [], []
-    for u, v in gm.edges:
-        xs.extend([gm.nodes[u]["x"], gm.nodes[v]["x"], None])
-        ys.extend([gm.nodes[u]["y"], gm.nodes[v]["y"], None])
-        zs.extend([gm.nodes[u]["z"], gm.nodes[v]["z"], None])
+    for u, v in swc_model.edges:
+        xs.extend([swc_model.nodes[u]["x"], swc_model.nodes[v]["x"], None])
+        ys.extend([swc_model.nodes[u]["y"], swc_model.nodes[v]["y"], None])
+        zs.extend([swc_model.nodes[u]["z"], swc_model.nodes[v]["z"], None])
     centroid = go.Scatter3d(
         x=xs,
         y=ys,
@@ -159,9 +188,9 @@ def plot_frusta_with_centroid(
 
     traces = [centroid]
     if show_nodes:
-        xn = [gm.nodes[n]["x"] for n in gm.nodes]
-        yn = [gm.nodes[n]["y"] for n in gm.nodes]
-        zn = [gm.nodes[n]["z"] for n in gm.nodes]
+        xn = [swc_model.nodes[n]["x"] for n in swc_model.nodes]
+        yn = [swc_model.nodes[n]["y"] for n in swc_model.nodes]
+        zn = [swc_model.nodes[n]["z"] for n in swc_model.nodes]
         nodes = go.Scatter3d(
             x=xn,
             y=yn,
@@ -175,25 +204,44 @@ def plot_frusta_with_centroid(
     # Frusta mesh (optionally scaled)
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
-    mesh = go.Mesh3d(
-        x=x,
-        y=y,
-        z=z,
-        i=i,
-        j=j,
-        k=k,
-        color=color,
-        opacity=opacity,
-        flatshading=flatshading,
-        name="frusta",
-    )
+    if tag_colors is not None:
+        slices = fr.per_segment_face_slices()
+        facecolor: list[str] = []
+        for (start, count), seg in zip(slices, fr.segments):
+            c = tag_colors.get(seg.tag, color)
+            facecolor.extend([c] * count)
+        mesh = go.Mesh3d(
+            x=x,
+            y=y,
+            z=z,
+            i=i,
+            j=j,
+            k=k,
+            facecolor=facecolor,
+            opacity=opacity,
+            flatshading=flatshading,
+            name="frusta",
+        )
+    else:
+        mesh = go.Mesh3d(
+            x=x,
+            y=y,
+            z=z,
+            i=i,
+            j=j,
+            k=k,
+            color=color,
+            opacity=opacity,
+            flatshading=flatshading,
+            name="frusta",
+        )
     traces.append(mesh)
 
     fig = go.Figure(data=traces)
     apply_layout(fig, title="Centroid + Frusta")
     logger.info(
         "plot_frusta_with_centroid edges=%d segments=%d radius_scale=%s",
-        len(list(gm.edges)),
+        len(list(swc_model.edges)),
         frusta.segment_count,
         radius_scale,
     )
@@ -206,6 +254,7 @@ def plot_frusta_slider(
     color: str = "lightblue",
     opacity: float = 0.8,
     flatshading: bool = True,
+    tag_colors: dict[int, str] | None = None,
     min_scale: float = 0.0,
     max_scale: float = 1.0,
     steps: int = 21,
@@ -233,42 +282,81 @@ def plot_frusta_slider(
     init_fr = base if init_scale == 1.0 else base.scaled(init_scale)
     x0, y0, z0, _, _, _ = init_fr.to_mesh3d_arrays()
 
-    mesh = go.Mesh3d(
-        x=x0,
-        y=y0,
-        z=z0,
-        i=bi,
-        j=bj,
-        k=bk,
-        color=color,
-        opacity=opacity,
-        flatshading=flatshading,
-        name="frusta",
-    )
+    if tag_colors is not None:
+        slices = base.per_segment_face_slices()
+        facecolor0: list[str] = []
+        for (start, count), seg in zip(slices, base.segments):
+            c = tag_colors.get(seg.tag, color)
+            facecolor0.extend([c] * count)
+        mesh = go.Mesh3d(
+            x=x0,
+            y=y0,
+            z=z0,
+            i=bi,
+            j=bj,
+            k=bk,
+            facecolor=facecolor0,
+            opacity=opacity,
+            flatshading=flatshading,
+            name="frusta",
+        )
+    else:
+        mesh = go.Mesh3d(
+            x=x0,
+            y=y0,
+            z=z0,
+            i=bi,
+            j=bj,
+            k=bk,
+            color=color,
+            opacity=opacity,
+            flatshading=flatshading,
+            name="frusta",
+        )
 
     frames = []
     # with _suppress_geometry_logs():
     for s in scales:
         fr_s = base if s == 1.0 else base.scaled(s)
         xs, ys, zs, _, _, _ = fr_s.to_mesh3d_arrays()
-        frames.append(
-            go.Frame(
-                name=f"scale={s:.2f}",
-                data=[
-                    go.Mesh3d(
-                        x=xs,
-                        y=ys,
-                        z=zs,
-                        i=bi,
-                        j=bj,
-                        k=bk,
-                        color=color,
-                        opacity=opacity,
-                        flatshading=flatshading,
-                    )
-                ],
+        if tag_colors is not None:
+            frames.append(
+                go.Frame(
+                    name=f"scale={s:.2f}",
+                    data=[
+                        go.Mesh3d(
+                            x=xs,
+                            y=ys,
+                            z=zs,
+                            i=bi,
+                            j=bj,
+                            k=bk,
+                            facecolor=facecolor0,
+                            opacity=opacity,
+                            flatshading=flatshading,
+                        )
+                    ],
+                )
             )
-        )
+        else:
+            frames.append(
+                go.Frame(
+                    name=f"scale={s:.2f}",
+                    data=[
+                        go.Mesh3d(
+                            x=xs,
+                            y=ys,
+                            z=zs,
+                            i=bi,
+                            j=bj,
+                            k=bk,
+                            color=color,
+                            opacity=opacity,
+                            flatshading=flatshading,
+                        )
+                    ],
+                )
+            )
 
     # Slider and play controls
     slider_steps = [
@@ -358,6 +446,7 @@ def plot_model(
     color: str = "lightblue",
     opacity: float = 0.8,
     flatshading: bool = True,
+    tag_colors: dict[int, str] | None = None,
     # Scaling and interactivity
     radius_scale: float = 1.0,
     slider: bool = False,
@@ -465,18 +554,37 @@ def plot_model(
             init_fr = base_fr if init_scale == 1.0 else base_fr.scaled(init_scale)
             x0, y0, z0, _, _, _ = init_fr.to_mesh3d_arrays()
 
-            mesh = go.Mesh3d(
-                x=x0,
-                y=y0,
-                z=z0,
-                i=bi,
-                j=bj,
-                k=bk,
-                color=color,
-                opacity=opacity,
-                flatshading=flatshading,
-                name="frusta",
-            )
+            if tag_colors is not None:
+                slices = base_fr.per_segment_face_slices()
+                facecolor0: list[str] = []
+                for (start, count), seg in zip(slices, base_fr.segments):
+                    c = tag_colors.get(seg.tag, color)
+                    facecolor0.extend([c] * count)
+                mesh = go.Mesh3d(
+                    x=x0,
+                    y=y0,
+                    z=z0,
+                    i=bi,
+                    j=bj,
+                    k=bk,
+                    facecolor=facecolor0,
+                    opacity=opacity,
+                    flatshading=flatshading,
+                    name="frusta",
+                )
+            else:
+                mesh = go.Mesh3d(
+                    x=x0,
+                    y=y0,
+                    z=z0,
+                    i=bi,
+                    j=bj,
+                    k=bk,
+                    color=color,
+                    opacity=opacity,
+                    flatshading=flatshading,
+                    name="frusta",
+                )
 
             # Ensure mesh is the FIRST trace so frames can update just this trace
             traces = [mesh] + traces
@@ -486,24 +594,44 @@ def plot_model(
             for s in scales:
                 fr_s = base_fr if s == 1.0 else base_fr.scaled(s)
                 xs, ys, zs, _, _, _ = fr_s.to_mesh3d_arrays()
-                frames.append(
-                    go.Frame(
-                        name=f"scale={s:.2f}",
-                        data=[
-                            go.Mesh3d(
-                                x=xs,
-                                y=ys,
-                                z=zs,
-                                i=bi,
-                                j=bj,
-                                k=bk,
-                                color=color,
-                                opacity=opacity,
-                                flatshading=flatshading,
-                            )
-                        ],
+                if tag_colors is not None:
+                    frames.append(
+                        go.Frame(
+                            name=f"scale={s:.2f}",
+                            data=[
+                                go.Mesh3d(
+                                    x=xs,
+                                    y=ys,
+                                    z=zs,
+                                    i=bi,
+                                    j=bj,
+                                    k=bk,
+                                    facecolor=facecolor0,
+                                    opacity=opacity,
+                                    flatshading=flatshading,
+                                )
+                            ],
+                        )
                     )
-                )
+                else:
+                    frames.append(
+                        go.Frame(
+                            name=f"scale={s:.2f}",
+                            data=[
+                                go.Mesh3d(
+                                    x=xs,
+                                    y=ys,
+                                    z=zs,
+                                    i=bi,
+                                    j=bj,
+                                    k=bk,
+                                    color=color,
+                                    opacity=opacity,
+                                    flatshading=flatshading,
+                                )
+                            ],
+                        )
+                    )
 
             slider_steps = [
                 {
@@ -580,18 +708,37 @@ def plot_model(
             # Static radius scale
             fr = base_fr if radius_scale == 1.0 else base_fr.scaled(radius_scale)
             x, y, z, i, j, k = fr.to_mesh3d_arrays()
-            mesh = go.Mesh3d(
-                x=x,
-                y=y,
-                z=z,
-                i=i,
-                j=j,
-                k=k,
-                color=color,
-                opacity=opacity,
-                flatshading=flatshading,
-                name="frusta",
-            )
+            if tag_colors is not None:
+                slices = fr.per_segment_face_slices()
+                facecolor: list[str] = []
+                for (start, count), seg in zip(slices, fr.segments):
+                    c = tag_colors.get(seg.tag, color)
+                    facecolor.extend([c] * count)
+                mesh = go.Mesh3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    i=i,
+                    j=j,
+                    k=k,
+                    facecolor=facecolor,
+                    opacity=opacity,
+                    flatshading=flatshading,
+                    name="frusta",
+                )
+            else:
+                mesh = go.Mesh3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    i=i,
+                    j=j,
+                    k=k,
+                    color=color,
+                    opacity=opacity,
+                    flatshading=flatshading,
+                    name="frusta",
+                )
             traces.insert(0, mesh)  # keep mesh on bottom for visibility
 
     fig = go.Figure(data=traces)

@@ -45,7 +45,7 @@ Status: planning. No public API is stable yet.
 
 - [x] Implement `SWCModel(networkx.DiGraph)`
   - Node key: SWC id `n` (int)
-  - Node attrs: `t` (type), `x`, `y`, `z` (floats), `r` (float), optional `meta`
+  - Node attrs: `t` (int), `x`, `y`, `z` (floats), `r` (float), optional `meta`
   - Directed edges: parent ➔ child; support forest (multiple roots)
 - [x] Implement `GeneralModel(networkx.Graph)` for visualization and reconnection support
   - Undirected graph built with header reconnections (`CYCLE_BREAK reconnect i j`)
@@ -80,7 +80,7 @@ Status: planning. No public API is stable yet.
 
 - [x] Build edge list from `GeneralModel` suitable for `plotly.graph_objects.Scatter3d`
 - [x] `plot_centroid(general_model, ...) -> go.Figure`
-  - Options: color by type/depth/component, show markers vs lines, line width scaling by radius (optional)
+  - Options: color by tag/depth/component, show markers vs lines, line width scaling by radius (optional)
   - Aspect ratio, axis labels, background theme presets
   - Tests (figure structure, traces present, basic property checks)
 
@@ -94,7 +94,7 @@ Status: planning. No public API is stable yet.
 - [x] Mesh batching utilities
   - Generate vertices and faces for entire model
   - One `Mesh3d` per model (batched) vs per-segment trade-offs
-  - Color mapping by segment id/type or by external scalar array
+  - Color mapping by segment id/tag or by external scalar array
   - Performance passes for moderate-sized morphologies
 - [x] Add uniform radius scaling for volumetric mesh (`plot_frusta(radius_scale=...)`)
 - [x] Overlay centroid + frusta (`plot_frusta_with_centroid`)

@@ -81,7 +81,7 @@ class SWCModel(nx.Graph):
     """SWC morphology graph (undirected storage with directed-tree metadata).
 
     Nodes are keyed by SWC id `n` and store attributes:
-    - t: int (structure type)
+    - t: int (tag)
     - x, y, z: float (coordinates)
     - r: float (radius)
     - line: int (line number in source; informational)
@@ -271,7 +271,9 @@ class SWCModel(nx.Graph):
             )
             return nm
         logger.debug(
-            "SWCModel.copy nodes=%d edges=%d", new.number_of_nodes(), new.number_of_edges()
+            "SWCModel.copy nodes=%d edges=%d",
+            new.number_of_nodes(),
+            new.number_of_edges(),
         )
         return new
 
@@ -365,6 +367,77 @@ class SWCModel(nx.Graph):
             if "r" in attrs:
                 attrs["r"] *= scalar
         return new
+
+    def set_tag_by_sphere(
+        self,
+        center: tuple[float, float, float] | list[float],
+        radius: float,
+        new_tag: int,
+        old_tag: int | None = None,
+        include_boundary: bool = True,
+        copy: bool = False,
+    ) -> "SWCModel":
+        """Override node 't' values for points inside a sphere.
+
+        Sets the tag 't' for all nodes whose Euclidean distance from
+        `center` is less than `radius` (or equal if `include_boundary` is True).
+
+        If `old_tag` is specified, only nodes with that tag are modified.
+
+        Parameters
+        ----------
+        center: tuple[float, float, float] | list[float]
+            Sphere center as (x, y, z).
+        radius: float
+            Sphere radius (same units as coordinates).
+        new_tag: int
+            Tag to assign to matching nodes.
+        old_tag: int | None
+            If specified, only nodes with this tag are modified.
+        include_boundary: bool
+            If True, include nodes exactly at distance == radius. Default True.
+        copy: bool
+            If True, operate on and return a copy; otherwise mutate in place and return self.
+        """
+        logger = logging.getLogger(__name__)
+        try:
+            cx, cy, cz = float(center[0]), float(center[1]), float(center[2])
+        except Exception as e:  # noqa: BLE001
+            raise ValueError("center must be a sequence of three numbers") from e
+        if not isinstance(radius, (int, float)) or radius < 0:
+            raise ValueError("radius must be a non-negative number")
+        if not isinstance(new_tag, int):
+            raise TypeError("new_tag must be an int")
+        target = self.copy() if copy else self
+        r2 = float(radius) * float(radius)
+        changed = 0
+        for _, attrs in target.nodes(data=True):
+            x = float(attrs.get("x", 0.0))
+            y = float(attrs.get("y", 0.0))
+            z = float(attrs.get("z", 0.0))
+            dx = x - cx
+            dy = y - cy
+            dz = z - cz
+            d2 = dx * dx + dy * dy + dz * dz
+            inside = d2 <= r2 if include_boundary else d2 < r2
+            if inside:
+                if old_tag is not None and attrs.get("t") != int(old_tag):
+                    continue
+                if attrs.get("t") != int(new_tag):
+                    changed += 1
+                attrs["t"] = int(new_tag)
+        logger.info(
+            "set_tag_by_sphere center=(%.6f, %.6f, %.6f) radius=%.6f new_tag=%d old_tag=%s changed=%d copy=%s",
+            cx,
+            cy,
+            cz,
+            radius,
+            int(new_tag),
+            old_tag,
+            changed,
+            copy,
+        )
+        return target
 
     def make_cycle_connections(
         self,

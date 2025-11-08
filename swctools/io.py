@@ -49,7 +49,7 @@ class SWCRecord:
     n: int
         Node id (unique within file)
     t: int
-        Structure type code
+        Tag index
     x, y, z: float
         Coordinates (usually micrometers)
     r: float
