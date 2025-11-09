@@ -76,10 +76,10 @@ class SWCParseResult:
 
     records: Dict[int, SWCRecord]
     reconnections: List[Tuple[int, int]]
-    comments: List[str]
+    header: List[str]
 
     def __str__(self) -> str:
-        return f"SWCParseResult(records={len(self.records)}, reconnections={len(self.reconnections)}, comments={len(self.comments)})"
+        return f"SWCParseResult(records={len(self.records)}, reconnections={len(self.reconnections)}, header={len(self.header)})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -119,7 +119,7 @@ def parse_swc(
     Returns
     -------
     SWCParseResult
-        Parsed records, reconnection pairs, and collected comments.
+        Parsed records, reconnection pairs, and header lines.
 
     Raises
     ------
@@ -137,7 +137,7 @@ def parse_swc(
     )
 
     records: Dict[int, SWCRecord] = {}
-    comments: List[str] = []
+    header: List[str] = []
     reconnections: List[Tuple[int, int]] = []
 
     for lineno, raw in _iter_lines(source):
@@ -145,7 +145,7 @@ def parse_swc(
         if not line:
             continue
         if line.startswith("#"):
-            comments.append(raw.rstrip("\n"))
+            header.append(raw.rstrip("\n"))
             m = _RECONNECT_RE.match(raw)
             if m:
                 i = int(m.group("i"))
@@ -217,14 +217,12 @@ def parse_swc(
                 )
 
     logger.info(
-        "parse_swc done records=%d reconnections=%d comments=%d",
+        "parse_swc done records=%d reconnections=%d header=%d",
         len(records),
         len(reconnections),
-        len(comments),
+        len(header),
     )
-    return SWCParseResult(
-        records=records, reconnections=reconnections, comments=comments
-    )
+    return SWCParseResult(records=records, reconnections=reconnections, header=header)
 
 
 # Helpers -----------------------------------------------------------------------------------------

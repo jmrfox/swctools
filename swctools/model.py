@@ -104,14 +104,16 @@ class SWCModel(nx.Graph):
         """Build a model from a parsed SWC result."""
         logger = logging.getLogger(__name__)
         model = cls.from_records(result.records)
+        model.graph["header"] = result.header
         try:
             model.graph["reconnections"] = list(result.reconnections)
         except Exception:
             model.graph["reconnections"] = []
         logger.info(
-            "SWCModel.from_parse_result records=%d reconnections=%d",
+            "SWCModel.from_parse_result records=%d reconnections=%d header=%d",
             len(result.records),
             len(result.reconnections),
+            len(result.header),
         )
         return model
 
@@ -282,7 +284,6 @@ class SWCModel(nx.Graph):
         path: str | os.PathLike[str],
         *,
         precision: int = 6,
-        include_reconnections: bool = True,
         header: Iterable[str] | None = None,
     ) -> None:
         """Write the model to an SWC file.
@@ -296,9 +297,6 @@ class SWCModel(nx.Graph):
             Destination file path.
         precision: int
             Decimal places for floating-point fields (x, y, z, r). Default 6.
-        include_reconnections: bool
-            If True and reconnections are present in `self.graph['reconnections']`,
-            emit header lines of the form "# CYCLE_BREAK reconnect i j".
         header: Iterable[str] | None
             Optional additional header comment lines (without leading '#').
         """
@@ -307,7 +305,7 @@ class SWCModel(nx.Graph):
             raise ValueError("precision must be a non-negative integer")
 
         # Prepare header lines
-        header_lines: list[str] = []
+        header_lines: list[str] = self.graph.get("header", [])
         if header:
             for line in header:
                 text = str(line).rstrip("\n")
@@ -315,11 +313,6 @@ class SWCModel(nx.Graph):
                     header_lines.append(text)
                 else:
                     header_lines.append(f"# {text}")
-
-        if include_reconnections:
-            pairs = list(self.graph.get("reconnections", []))
-            for a, b in sorted((tuple(sorted(map(int, p))) for p in pairs)):
-                header_lines.append(f"# CYCLE_BREAK reconnect {a} {b}")
 
         fmt = f"{{:.{precision}f}}"
 
