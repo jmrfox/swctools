@@ -80,13 +80,15 @@ class Segment:
         Endpoints in model/world coordinates.
     ra, rb: float
         Radii at `a` and `b`.
+    tag: int
+        Optional tag for the segment.
     """
 
     a: Point3
     b: Point3
     ra: float
     rb: float
-    tag: int
+    tag: int = 0
 
     def vector(self) -> Vec3:
         return v_sub(self.b, self.a)
@@ -732,15 +734,12 @@ class FrustaSet:
         segments: List[Segment] = []
         edge_uvs: List[Tuple[int, int]] = []
         for u, v in model.edges:
-            xu, yu, zu = model.nodes[u]["x"], model.nodes[u]["y"], model.nodes[u]["z"]
-            xv, yv, zv = model.nodes[v]["x"], model.nodes[v]["y"], model.nodes[v]["z"]
-            ru, rv = float(model.nodes[u]["r"]), float(model.nodes[v]["r"])
-            tag = model.nodes[u]["t"]
-            if flip_tag_assignment:
-                tag = model.nodes[v]["t"]
-            segments.append(
-                Segment(a=(xu, yu, zu), b=(xv, yv, zv), ra=ru, rb=rv, tag=tag)
-            )
+            xyz_u = model.get_node_xyz(u)
+            xyz_v = model.get_node_xyz(v)
+            ru = model.get_node_radius(u)
+            rv = model.get_node_radius(v)
+            tag = model.get_node_tag(v if flip_tag_assignment else u)
+            segments.append(Segment(a=xyz_u, b=xyz_v, ra=ru, rb=rv, tag=tag))
             edge_uvs.append((int(u), int(v)))
 
         logger = logging.getLogger(__name__)

@@ -15,8 +15,10 @@ from .viz import (
     plot_frusta_slider,
     plot_model,
     plot_frusta_timeseries,
+    plot_points,
 )
 from .config import get_config, set_config, apply_layout
+
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __all__ = [
@@ -35,6 +37,7 @@ __all__ = [
     "plot_frusta_slider",
     "plot_frusta_timeseries",
     "plot_model",
+    "plot_points",
     "get_config",
     "set_config",
     "apply_layout",

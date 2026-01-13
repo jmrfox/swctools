@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Iterable, Mapping, Any
 import os
 import networkx as nx
+import numpy as np
 import logging
 
 from .io import SWCRecord, SWCParseResult, parse_swc
@@ -200,6 +201,21 @@ class SWCModel(nx.Graph):
         """Return the parent id of node n from the original SWC tree (or None)."""
         return self._parents.get(n)
 
+    def children_of(self, node_id: int) -> list[int]:
+        """Return list of child node IDs in the original SWC tree.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to query.
+
+        Returns
+        -------
+        list[int]
+            List of node IDs that have node_id as their parent.
+        """
+        return [n for n, p in self._parents.items() if p == node_id]
+
     def path_to_root(self, n: int) -> list[int]:
         """Return the path from node n up to its root, inclusive.
 
@@ -214,6 +230,368 @@ class SWCModel(nx.Graph):
             path.append(p)
             current = p
         return path
+
+    def get_node_xyz(
+        self, node_id: int, as_array: bool = False
+    ) -> tuple[float, float, float] | np.ndarray:
+        """Get xyz coordinates for a node.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to query.
+        as_array: bool
+            If True, return as numpy array. If False (default), return as tuple.
+
+        Returns
+        -------
+        tuple[float, float, float] | np.ndarray
+            The (x, y, z) coordinates of the node.
+
+        Raises
+        ------
+        KeyError
+            If node_id is not in the graph.
+        ValueError
+            If the node is missing x, y, or z attributes.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Node {node_id} not found in graph")
+
+        node = self.nodes[node_id]
+        try:
+            x = float(node["x"])
+            y = float(node["y"])
+            z = float(node["z"])
+            if as_array:
+                return np.array([x, y, z], dtype=float)
+            return (x, y, z)
+        except KeyError as e:
+            raise ValueError(f"Node {node_id} missing coordinate attribute: {e}")
+
+    def get_node_radius(self, node_id: int) -> float:
+        """Get radius for a node.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to query.
+
+        Returns
+        -------
+        float
+            The radius of the node. Returns 0.0 if 'r' attribute is not present.
+
+        Raises
+        ------
+        KeyError
+            If node_id is not in the graph.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Node {node_id} not found in graph")
+
+        return float(self.nodes[node_id].get("r", 0.0))
+
+    def set_node_xyz(
+        self,
+        node_id: int,
+        x: float | None = None,
+        y: float | None = None,
+        z: float | None = None,
+        *,
+        xyz: tuple[float, float, float] | list[float] | np.ndarray | None = None,
+    ) -> None:
+        """Set xyz coordinates for a node.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to update.
+        x, y, z: float | None
+            New coordinates as separate arguments.
+        xyz: tuple | list | np.ndarray | None
+            New coordinates as a sequence (x, y, z). If provided, takes precedence
+            over separate x, y, z arguments.
+
+        Raises
+        ------
+        KeyError
+            If node_id is not in the graph.
+        ValueError
+            If neither (x, y, z) nor xyz is provided, or if xyz has wrong length.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Node {node_id} not found in graph")
+
+        if xyz is not None:
+            if len(xyz) != 3:
+                raise ValueError(f"xyz must have length 3, got {len(xyz)}")
+            x_val, y_val, z_val = float(xyz[0]), float(xyz[1]), float(xyz[2])
+        elif x is not None and y is not None and z is not None:
+            x_val, y_val, z_val = float(x), float(y), float(z)
+        else:
+            raise ValueError("Must provide either (x, y, z) or xyz")
+
+        self.nodes[node_id]["x"] = x_val
+        self.nodes[node_id]["y"] = y_val
+        self.nodes[node_id]["z"] = z_val
+
+    def set_node_radius(self, node_id: int, radius: float) -> None:
+        """Set radius for a node.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to update.
+        radius: float
+            New radius value.
+
+        Raises
+        ------
+        KeyError
+            If node_id is not in the graph.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Node {node_id} not found in graph")
+
+        self.nodes[node_id]["r"] = float(radius)
+
+    def get_node_tag(self, node_id: int) -> int:
+        """Get tag for a node.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to query.
+
+        Returns
+        -------
+        int
+            The tag of the node. Returns 0 if 't' attribute is not present.
+
+        Raises
+        ------
+        KeyError
+            If node_id is not in the graph.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Node {node_id} not found in graph")
+
+        return int(self.nodes[node_id].get("t", 0))
+
+    def set_node_tag(self, node_id: int, tag: int) -> None:
+        """Set tag for a node.
+
+        Parameters
+        ----------
+        node_id: int
+            Node ID to update.
+        tag: int
+            New tag value.
+
+        Raises
+        ------
+        KeyError
+            If node_id is not in the graph.
+        """
+        if node_id not in self.nodes:
+            raise KeyError(f"Node {node_id} not found in graph")
+
+        self.nodes[node_id]["t"] = int(tag)
+
+    def get_edge_length(self, u: int, v: int) -> float:
+        """Compute Euclidean distance between two nodes.
+
+        Parameters
+        ----------
+        u, v: int
+            Node IDs. They do not need to be connected by an edge.
+
+        Returns
+        -------
+        float
+            Euclidean distance between the nodes.
+
+        Raises
+        ------
+        KeyError
+            If either node is not in the graph.
+        ValueError
+            If either node is missing coordinate attributes.
+        """
+        xyz_u = self.get_node_xyz(u)
+        xyz_v = self.get_node_xyz(v)
+
+        dx = xyz_v[0] - xyz_u[0]
+        dy = xyz_v[1] - xyz_u[1]
+        dz = xyz_v[2] - xyz_u[2]
+
+        return float((dx * dx + dy * dy + dz * dz) ** 0.5)
+
+    def update_radii(self, radii_dict: dict[int, float]) -> None:
+        """Update radii for multiple nodes at once.
+
+        Parameters
+        ----------
+        radii_dict: dict[int, float]
+            Mapping of node_id -> new radius value.
+
+        Raises
+        ------
+        KeyError
+            If any node_id is not in the graph.
+        """
+        for node_id, radius in radii_dict.items():
+            if node_id not in self.nodes:
+                raise KeyError(f"Node {node_id} not found in graph")
+            self.nodes[node_id]["r"] = float(radius)
+
+    def update_tags(self, tags_dict: dict[int, int]) -> None:
+        """Update tags for multiple nodes at once.
+
+        Parameters
+        ----------
+        tags_dict: dict[int, int]
+            Mapping of node_id -> new tag value.
+
+        Raises
+        ------
+        KeyError
+            If any node_id is not in the graph.
+        """
+        for node_id, tag in tags_dict.items():
+            if node_id not in self.nodes:
+                raise KeyError(f"Node {node_id} not found in graph")
+            self.nodes[node_id]["t"] = int(tag)
+
+    def leaves(self) -> list[int]:
+        """Return leaf nodes (nodes with no children in the original SWC tree).
+
+        Returns
+        -------
+        list[int]
+            List of node IDs that have no children.
+        """
+        children_counts = {n: 0 for n in self.nodes}
+        for n, p in self._parents.items():
+            if p is not None:
+                children_counts[p] = children_counts.get(p, 0) + 1
+        return [n for n, count in children_counts.items() if count == 0]
+
+    def branch_points(self) -> list[int]:
+        """Return branch point nodes (nodes with degree > 2).
+
+        Returns
+        -------
+        list[int]
+            List of node IDs with more than 2 neighbors in the graph.
+        """
+        return [n for n in self.nodes if self.degree(n) > 2]
+
+    def get_subtree(self, root_id: int) -> list[int]:
+        """Return all node IDs in the subtree rooted at root_id.
+
+        Uses the original SWC tree parent relationships to traverse descendants.
+
+        Parameters
+        ----------
+        root_id: int
+            Root node of the subtree.
+
+        Returns
+        -------
+        list[int]
+            List of all node IDs in the subtree, including root_id.
+
+        Raises
+        ------
+        KeyError
+            If root_id is not in the graph.
+        """
+        if root_id not in self.nodes:
+            raise KeyError(f"Node {root_id} not found in graph")
+
+        subtree = [root_id]
+        queue = [root_id]
+
+        while queue:
+            current = queue.pop(0)
+            children = self.children_of(current)
+            subtree.extend(children)
+            queue.extend(children)
+
+        return subtree
+
+    def iter_edges_with_data(self):
+        """Iterate edges with node attributes for both endpoints.
+
+        Yields
+        ------
+        tuple[int, int, dict]
+            For each edge (u, v), yields (u, v, data_dict) where data_dict contains:
+            - 'u_xyz': tuple of (x, y, z) for node u
+            - 'v_xyz': tuple of (x, y, z) for node v
+            - 'u_r': radius of node u
+            - 'v_r': radius of node v
+            - 'u_t': tag of node u
+            - 'v_t': tag of node v
+            - 'length': Euclidean distance between u and v
+        """
+        for u, v in self.edges():
+            yield u, v, {
+                "u_xyz": self.get_node_xyz(u),
+                "v_xyz": self.get_node_xyz(v),
+                "u_r": self.get_node_radius(u),
+                "v_r": self.get_node_radius(v),
+                "u_t": self.get_node_tag(u),
+                "v_t": self.get_node_tag(v),
+                "length": self.get_edge_length(u, v),
+            }
+
+    def validate(self, strict: bool = True) -> list[str]:
+        """Validate the model and return list of issues found.
+
+        Parameters
+        ----------
+        strict: bool
+            If True, perform stricter validation checks.
+
+        Returns
+        -------
+        list[str]
+            List of validation issue descriptions. Empty list if no issues found.
+        """
+        issues = []
+
+        # Check for required attributes
+        for node_id in self.nodes:
+            node = self.nodes[node_id]
+            for attr in ["x", "y", "z", "r"]:
+                if attr not in node:
+                    issues.append(f"Node {node_id} missing required attribute '{attr}'")
+
+            # Check for zero or negative radii
+            if "r" in node:
+                r = node["r"]
+                if r < 0:
+                    issues.append(f"Node {node_id} has negative radius: {r}")
+                elif strict and r == 0:
+                    issues.append(f"Node {node_id} has zero radius")
+
+        # Check parent references
+        for node_id, parent_id in self._parents.items():
+            if parent_id is not None and parent_id not in self.nodes:
+                issues.append(
+                    f"Node {node_id} has invalid parent reference: {parent_id}"
+                )
+
+        # Check for disconnected components (if strict)
+        if strict:
+            num_components = nx.number_connected_components(self)
+            if num_components > 1:
+                issues.append(f"Graph has {num_components} disconnected components")
+
+        return issues
 
     def print_attributes(
         self, *, node_info: bool = False, edge_info: bool = False

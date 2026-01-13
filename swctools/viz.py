@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import logging
 from contextlib import contextmanager
 
+from .model import SWCModel
 from .geometry import FrustaSet, PointSet
 from .config import apply_layout
 
@@ -27,6 +28,82 @@ from .config import apply_layout
 #         lg.setLevel(prev_level)
 
 
+# ----------------------------------------------------------------------------------------------
+# Helper functions
+# ----------------------------------------------------------------------------------------------
+
+
+def _build_centroid_polyline(
+    swc_model: SWCModel,
+) -> tuple[list[float], list[float], list[float]]:
+    """Build polyline coordinates for centroid skeleton edges.
+
+    Returns
+    -------
+    tuple[list[float], list[float], list[float]]
+        Lists of x, y, z coordinates with None separators for Plotly.
+    """
+    xs, ys, zs = [], [], []
+    for u, v in swc_model.edges:
+        xu, yu, zu = swc_model.get_node_xyz(u)
+        xv, yv, zv = swc_model.get_node_xyz(v)
+        xs.extend([xu, xv, None])
+        ys.extend([yu, yv, None])
+        zs.extend([zu, zv, None])
+    return xs, ys, zs
+
+
+def _build_node_scatter(
+    swc_model: SWCModel,
+) -> tuple[list[float], list[float], list[float]]:
+    """Build scatter plot coordinates for all nodes.
+
+    Returns
+    -------
+    tuple[list[float], list[float], list[float]]
+        Lists of x, y, z coordinates for all nodes.
+    """
+    xs, ys, zs = [], [], []
+    for node_id in swc_model.nodes:
+        x, y, z = swc_model.get_node_xyz(node_id)
+        xs.append(x)
+        ys.append(y)
+        zs.append(z)
+    return xs, ys, zs
+
+
+def _build_tag_facecolors(
+    frusta: FrustaSet, tag_colors: dict[int, str], default_color: str = "lightblue"
+) -> list[str]:
+    """Build per-face color list based on segment tags.
+
+    Parameters
+    ----------
+    frusta: FrustaSet
+        Frusta set with segments.
+    tag_colors: dict[int, str]
+        Mapping of tag values to color strings.
+    default_color: str
+        Default color for tags not in tag_colors.
+
+    Returns
+    -------
+    list[str]
+        Color string for each face in the frusta mesh.
+    """
+    slices = frusta.per_segment_face_slices()
+    facecolors = []
+    for (start, count), seg in zip(slices, frusta.segments):
+        color = tag_colors.get(seg.tag, default_color)
+        facecolors.extend([color] * count)
+    return facecolors
+
+
+# ----------------------------------------------------------------------------------------------
+# Plotting functions
+# ----------------------------------------------------------------------------------------------
+
+
 def plot_centroid(
     swc_model: SWCModel,
     *,
@@ -40,16 +117,8 @@ def plot_centroid(
     Edges are drawn as line segments in 3D using Scatter3d.
     """
     logger = logging.getLogger(__name__)
-    xs = []
-    ys = []
-    zs = []
 
-    # Build polyline segments with None separators for Plotly
-    for u, v in swc_model.edges:
-        xs.extend([swc_model.nodes[u]["x"], swc_model.nodes[v]["x"], None])
-        ys.extend([swc_model.nodes[u]["y"], swc_model.nodes[v]["y"], None])
-        zs.extend([swc_model.nodes[u]["z"], swc_model.nodes[v]["z"], None])
-
+    xs, ys, zs = _build_centroid_polyline(swc_model)
     edge_trace = go.Scatter3d(
         x=xs,
         y=ys,
@@ -62,9 +131,7 @@ def plot_centroid(
     data = [edge_trace]
 
     if show_nodes:
-        xn = [swc_model.nodes[n]["x"] for n in swc_model.nodes]
-        yn = [swc_model.nodes[n]["y"] for n in swc_model.nodes]
-        zn = [swc_model.nodes[n]["z"] for n in swc_model.nodes]
+        xn, yn, zn = _build_node_scatter(swc_model)
         node_trace = go.Scatter3d(
             x=xn,
             y=yn,
@@ -115,11 +182,7 @@ def plot_frusta(
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
     if tag_colors is not None:
-        slices = fr.per_segment_face_slices()
-        facecolor: list[str] = []
-        for (start, count), seg in zip(slices, fr.segments):
-            c = tag_colors.get(seg.tag, color)
-            facecolor.extend([c] * count)
+        facecolor = _build_tag_facecolors(fr, tag_colors, color)
         mesh = go.Mesh3d(
             x=x,
             y=y,
@@ -174,12 +237,9 @@ def plot_frusta_with_centroid(
     Parameters mirror `plot_centroid` and `plot_frusta` with an extra `radius_scale`.
     """
     logger = logging.getLogger(__name__)
+
     # Build centroid polyline
-    xs, ys, zs = [], [], []
-    for u, v in swc_model.edges:
-        xs.extend([swc_model.nodes[u]["x"], swc_model.nodes[v]["x"], None])
-        ys.extend([swc_model.nodes[u]["y"], swc_model.nodes[v]["y"], None])
-        zs.extend([swc_model.nodes[u]["z"], swc_model.nodes[v]["z"], None])
+    xs, ys, zs = _build_centroid_polyline(swc_model)
     centroid = go.Scatter3d(
         x=xs,
         y=ys,
@@ -191,9 +251,7 @@ def plot_frusta_with_centroid(
 
     traces = [centroid]
     if show_nodes:
-        xn = [swc_model.nodes[n]["x"] for n in swc_model.nodes]
-        yn = [swc_model.nodes[n]["y"] for n in swc_model.nodes]
-        zn = [swc_model.nodes[n]["z"] for n in swc_model.nodes]
+        xn, yn, zn = _build_node_scatter(swc_model)
         nodes = go.Scatter3d(
             x=xn,
             y=yn,
@@ -208,11 +266,7 @@ def plot_frusta_with_centroid(
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
     if tag_colors is not None:
-        slices = fr.per_segment_face_slices()
-        facecolor: list[str] = []
-        for (start, count), seg in zip(slices, fr.segments):
-            c = tag_colors.get(seg.tag, color)
-            facecolor.extend([c] * count)
+        facecolor = _build_tag_facecolors(fr, tag_colors, color)
         mesh = go.Mesh3d(
             x=x,
             y=y,
@@ -490,11 +544,7 @@ def plot_model(
 
     # Centroid traces
     if show_centroid and swc_model is not None:
-        xs, ys, zs = [], [], []
-        for u, v in swc_model.edges:
-            xs.extend([swc_model.nodes[u]["x"], swc_model.nodes[v]["x"], None])
-            ys.extend([swc_model.nodes[u]["y"], swc_model.nodes[v]["y"], None])
-            zs.extend([swc_model.nodes[u]["z"], swc_model.nodes[v]["z"], None])
+        xs, ys, zs = _build_centroid_polyline(swc_model)
         centroid = go.Scatter3d(
             x=xs,
             y=ys,
@@ -506,9 +556,7 @@ def plot_model(
         traces.append(centroid)
 
         if show_nodes:
-            xn = [swc_model.nodes[n]["x"] for n in swc_model.nodes]
-            yn = [swc_model.nodes[n]["y"] for n in swc_model.nodes]
-            zn = [swc_model.nodes[n]["z"] for n in swc_model.nodes]
+            xn, yn, zn = _build_node_scatter(swc_model)
             nodes = go.Scatter3d(
                 x=xn,
                 y=yn,
@@ -560,11 +608,7 @@ def plot_model(
             x0, y0, z0, _, _, _ = init_fr.to_mesh3d_arrays()
 
             if tag_colors is not None:
-                slices = base_fr.per_segment_face_slices()
-                facecolor0: list[str] = []
-                for (start, count), seg in zip(slices, base_fr.segments):
-                    c = tag_colors.get(seg.tag, color)
-                    facecolor0.extend([c] * count)
+                facecolor0 = _build_tag_facecolors(base_fr, tag_colors, color)
                 mesh = go.Mesh3d(
                     x=x0,
                     y=y0,
@@ -714,11 +758,7 @@ def plot_model(
             fr = base_fr if radius_scale == 1.0 else base_fr.scaled(radius_scale)
             x, y, z, i, j, k = fr.to_mesh3d_arrays()
             if tag_colors is not None:
-                slices = fr.per_segment_face_slices()
-                facecolor: list[str] = []
-                for (start, count), seg in zip(slices, fr.segments):
-                    c = tag_colors.get(seg.tag, color)
-                    facecolor.extend([c] * count)
+                facecolor = _build_tag_facecolors(fr, tag_colors, color)
                 mesh = go.Mesh3d(
                     x=x,
                     y=y,
@@ -928,4 +968,66 @@ def plot_frusta_timeseries(
     fig = go.Figure(data=[mesh], frames=frames)
     apply_layout(fig, title=title or "Frusta timeseries")
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
+    logger.info(
+        "plot_frusta_timeseries T=%d N=%d colorscale=%s fps=%d",
+        T,
+        N,
+        colorscale,
+        fps,
+    )
+    return fig
+
+
+def plot_points(
+    point_set: PointSet,
+    *,
+    color: str = "#ff7f0e",
+    opacity: float = 1.0,
+    size_scale: float = 1.0,
+    title: str | None = None,
+) -> go.Figure:
+    """Plot a PointSet as a collection of small spheres.
+
+    Parameters
+    ----------
+    point_set: PointSet
+        Point set to visualize.
+    color: str
+        Color for all spheres.
+    opacity: float
+        Sphere opacity.
+    size_scale: float
+        Uniform scale applied to sphere radii (1.0 = no change).
+    title: str | None
+        Figure title.
+
+    Returns
+    -------
+    go.Figure
+        Plotly figure with Mesh3d trace.
+    """
+    logger = logging.getLogger(__name__)
+    ps = point_set if size_scale == 1.0 else point_set.scaled(size_scale)
+    x, y, z, i, j, k = ps.to_mesh3d_arrays()
+
+    mesh = go.Mesh3d(
+        x=x,
+        y=y,
+        z=z,
+        i=i,
+        j=j,
+        k=k,
+        color=color,
+        opacity=opacity,
+        flatshading=True,
+        name="points",
+    )
+
+    fig = go.Figure(data=[mesh])
+    apply_layout(fig, title=title or "Point Set")
+    logger.info(
+        "plot_points count=%d size_scale=%s",
+        len(point_set.points),
+        size_scale,
+    )
     return fig
