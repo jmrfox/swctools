@@ -432,6 +432,128 @@ class SWCModel(nx.Graph):
         )
         return target
 
+    # ----------------------------------------------------------------------------------------------
+    # Junction management
+    # ----------------------------------------------------------------------------------------------
+    def add_junction(
+        self,
+        node_id: int | None = None,
+        *,
+        t: int = 0,
+        x: float = 0.0,
+        y: float = 0.0,
+        z: float = 0.0,
+        r: float = 0.0,
+        parent: int | None = None,
+        **kwargs: Any,
+    ) -> int:
+        """Add a junction (node) to the model.
+
+        Parameters
+        ----------
+        node_id: int | None
+            Node ID to use. If None, automatically assigns the next available ID.
+        t: int
+            Node tag. Default 0.
+        x, y, z: float
+            Node coordinates. Default 0.0.
+        r: float
+            Node radius. Default 0.0.
+        parent: int | None
+            Parent node ID. If specified, creates an edge to the parent.
+            Default None (root node).
+        **kwargs: Any
+            Additional node attributes.
+
+        Returns
+        -------
+        int
+            The ID of the added node.
+        """
+        logger = logging.getLogger(__name__)
+
+        if node_id is None:
+            node_id = max(self.nodes, default=0) + 1
+        else:
+            node_id = int(node_id)
+            if node_id in self.nodes:
+                raise ValueError(f"Node {node_id} already exists")
+
+        if parent is not None:
+            parent = int(parent)
+            if parent not in self.nodes:
+                raise ValueError(f"Parent node {parent} does not exist")
+
+        attrs = {
+            "t": int(t),
+            "x": float(x),
+            "y": float(y),
+            "z": float(z),
+            "r": float(r),
+        }
+        attrs.update(kwargs)
+
+        self.add_node(node_id, **attrs)
+        self._parents[node_id] = parent
+
+        if parent is not None:
+            self.add_edge(parent, node_id)
+
+        logger.debug(
+            "add_junction node_id=%d parent=%s t=%d pos=(%.3f, %.3f, %.3f) r=%.3f",
+            node_id,
+            parent,
+            t,
+            x,
+            y,
+            z,
+            r,
+        )
+        return node_id
+
+    def remove_junction(
+        self,
+        node_id: int,
+        *,
+        reconnect_children: bool = False,
+    ) -> None:
+        """Remove a junction (node) from the model.
+
+        Parameters
+        ----------
+        node_id: int
+            ID of the node to remove.
+        reconnect_children: bool
+            If True, reconnect children of the removed node to its parent.
+            If False (default), children become orphaned (roots).
+        """
+        logger = logging.getLogger(__name__)
+
+        if node_id not in self.nodes:
+            raise ValueError(f"Node {node_id} does not exist")
+
+        parent = self._parents.get(node_id)
+        children = [n for n, p in self._parents.items() if p == node_id]
+
+        if reconnect_children and parent is not None:
+            for child in children:
+                self._parents[child] = parent
+                self.add_edge(parent, child)
+        else:
+            for child in children:
+                self._parents[child] = None
+
+        del self._parents[node_id]
+        self.remove_node(node_id)
+
+        logger.debug(
+            "remove_junction node_id=%d parent=%s children=%d reconnect=%s",
+            node_id,
+            parent,
+            len(children),
+            reconnect_children,
+        )
+
     def make_cycle_connections(
         self,
         *,
