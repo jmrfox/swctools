@@ -1,5 +1,6 @@
 from pathlib import Path
 import pytest
+import networkx as nx
 
 from swctools import parse_swc, SWCParseResult, SWCRecord, SWCModel
 
@@ -64,10 +65,10 @@ def test_from_swc_file(tmp_path: Path):
 
 
 def test_reconnection_merge_and_print(capsys):
-    """Ensure `SWCModel.make_cycle_connections()` merges reconnection pairs and prints a summary.
+    """Ensure `SWCModel.make_cycle_connections()` merges reconnection pairs.
 
-    Verifies merged node set, presence of an edge, and that printed output contains
-    expected summary tokens.
+    Verifies merged node set and presence of an edge. The method now returns
+    nx.Graph (not SWCModel) since the result may contain cycles.
     """
     swc = """
 # CYCLE_BREAK reconnect 2 3
@@ -80,13 +81,9 @@ def test_reconnection_merge_and_print(capsys):
     # Nodes 2 and 3 should merge into a single representative; expect nodes {1, 2}
     assert set(gm.nodes) == {1, 2}
     assert gm.has_edge(1, 2)
-
-    # print_attributes should not raise and should include summary keywords
-    gm.print_attributes()
-    gm.print_attributes(node_info=True, edge_info=True)
-    out = capsys.readouterr().out
-    assert "SWCModel:" in out
-    assert "nodes=" in out and "edges=" in out
+    # Verify it's an nx.Graph, not SWCModel
+    assert isinstance(gm, nx.Graph)
+    assert not isinstance(gm, SWCModel)
 
 
 def test_swcmodel_print_attributes_no_crash(capsys):

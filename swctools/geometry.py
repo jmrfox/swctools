@@ -710,7 +710,7 @@ class FrustaSet:
     @classmethod
     def from_swc_model(
         cls,
-        model: SWCModel,
+        model: Union[SWCModel, Any],
         *,
         sides: int = 16,
         end_caps: bool = False,
@@ -718,31 +718,68 @@ class FrustaSet:
     ) -> "FrustaSet":
         """Build a `FrustaSet` by converting each undirected edge into a `Segment`.
 
-        Expects nodes to have attributes `x, y, z, r`.
+        Accepts any NetworkX graph (SWCModel or nx.Graph) with nodes that have
+        spatial coordinates and radii. Validates that all nodes have required
+        attributes: x, y, z, r.
 
         Parameters
         ----------
-        model: SWCModel
-            The model to convert.
+        model: SWCModel | nx.Graph
+            Graph with nodes containing x, y, z, r attributes. Can be SWCModel
+            or nx.Graph (e.g., from make_cycle_connections()).
         sides: int
             Number of sides per frustum.
         end_caps: bool
             Whether to include end caps.
         flip_tag_assignment: bool
-            If True, assign tags from the child node to the parent node. Otherwise, assign tags from the parent node to the child node.
+            If True, assign tags from the child node to the parent node.
+            Otherwise, assign tags from the parent node to the child node.
+
+        Raises
+        ------
+        ValueError
+            If any node is missing required attributes (x, y, z, r).
         """
+        logger = logging.getLogger(__name__)
+
+        # Validate that all nodes have required attributes
+        required_attrs = {"x", "y", "z", "r"}
+        for node_id in model.nodes:
+            node = model.nodes[node_id]
+            missing = required_attrs - set(node.keys())
+            if missing:
+                raise ValueError(
+                    f"Node {node_id} missing required attributes: {missing}. "
+                    f"FrustaSet requires all nodes to have x, y, z, r attributes."
+                )
+
         segments: List[Segment] = []
         edge_uvs: List[Tuple[int, int]] = []
+
+        # Check if model has SWCModel helper methods
+        has_helpers = hasattr(model, "get_node_xyz")
+
         for u, v in model.edges:
-            xyz_u = model.get_node_xyz(u)
-            xyz_v = model.get_node_xyz(v)
-            ru = model.get_node_radius(u)
-            rv = model.get_node_radius(v)
-            tag = model.get_node_tag(v if flip_tag_assignment else u)
+            if has_helpers:
+                xyz_u = model.get_node_xyz(u)
+                xyz_v = model.get_node_xyz(v)
+                ru = model.get_node_radius(u)
+                rv = model.get_node_radius(v)
+                tag = model.get_node_tag(v if flip_tag_assignment else u)
+            else:
+                # Direct attribute access for nx.Graph
+                node_u = model.nodes[u]
+                node_v = model.nodes[v]
+                xyz_u = (float(node_u["x"]), float(node_u["y"]), float(node_u["z"]))
+                xyz_v = (float(node_v["x"]), float(node_v["y"]), float(node_v["z"]))
+                ru = float(node_u["r"])
+                rv = float(node_v["r"])
+                tag_node = node_v if flip_tag_assignment else node_u
+                tag = int(tag_node.get("t", 0))
+
             segments.append(Segment(a=xyz_u, b=xyz_v, ra=ru, rb=rv, tag=tag))
             edge_uvs.append((int(u), int(v)))
 
-        logger = logging.getLogger(__name__)
         vertices, faces = batch_frusta(segments, sides=sides, end_caps=end_caps)
         logger.info(
             "FrustaSet.from_swc_model edges=%d sides=%d end_caps=%s",

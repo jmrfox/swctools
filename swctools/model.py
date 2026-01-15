@@ -4,10 +4,15 @@ SWCModel stores SWC morphology as an undirected graph where nodes are SWC points
 and the original directed parent -> child relationships are preserved in an
 internal parent map.
 
+IMPORTANT: SWCModel represents valid SWC directed tree structures only. If you need
+to work with cyclic graphs (e.g., after applying reconnections), use the
+`make_cycle_connections()` method which returns a standard nx.Graph.
+
 Notes
 -----
-- Use `SWCModel` for topology and attribute management of parsed SWC, and for
-  reconnection merges via `SWCModel.make_cycle_connections()`.
+- Use `SWCModel` for topology and attribute management of parsed SWC trees.
+- Use `SWCModel.make_cycle_connections()` to merge reconnection pairs; this returns
+  an nx.Graph (not SWCModel) since the result may contain cycles.
 """
 
 from __future__ import annotations
@@ -79,7 +84,12 @@ def _graph_attributes(G: nx.Graph | nx.DiGraph) -> dict[str, Any]:
 
 
 class SWCModel(nx.Graph):
-    """SWC morphology graph (undirected storage with directed-tree metadata).
+    """SWC morphology graph representing a valid directed tree structure.
+
+    SWCModel conforms to the SWC format specification, which requires a directed
+    tree structure (no cycles). The underlying storage is an undirected nx.Graph,
+    but the original directed parent -> child relationships are preserved via an
+    internal `_parents` map.
 
     Nodes are keyed by SWC id `n` and store attributes:
     - t: int (tag)
@@ -87,9 +97,11 @@ class SWCModel(nx.Graph):
     - r: float (radius)
     - line: int (line number in source; informational)
 
-    Directed parent -> child relationships from the SWC are preserved via an
-    internal parent map (`_parents`). The underlying graph is undirected. Cycle
-    connections can be applied via `make_cycle_connections()` which may merge nodes.
+    For graphs with cycles (e.g., after applying reconnections), use
+    `make_cycle_connections()` which returns a standard nx.Graph instead of SWCModel.
+
+    Methods like `to_swc_file()` rely on the tree structure and will only work
+    correctly for valid SWC trees.
     """
 
     def __init__(self) -> None:
@@ -937,12 +949,21 @@ class SWCModel(nx.Graph):
         *,
         validate_reconnections: bool = True,
         float_tol: float = 1e-9,
-    ) -> "SWCModel":
-        """Return a new SWCModel with reconnection pairs merged and undirected edges across merged reps.
+    ) -> nx.Graph:
+        """Return an undirected nx.Graph with reconnection pairs merged.
 
         Uses reconnection pairs stored under `self.graph['reconnections']` if present.
         Node attributes are merged; provenance kept under `merged_ids` and `lines`.
-        After merges, the original tree parent mapping no longer applies and parents are set to None.
+
+        The returned graph may contain cycles and is no longer a valid SWC tree structure,
+        so it returns nx.Graph instead of SWCModel. SWCModel should only represent valid
+        directed tree structures conforming to the SWC format.
+
+        Returns
+        -------
+        nx.Graph
+            Undirected graph with merged nodes and edges. Node attributes include
+            x, y, z, r, t, merged_ids (list of original node IDs), and lines.
         """
         logger = logging.getLogger(__name__)
         pairs = list(self.graph.get("reconnections", []))
@@ -1010,8 +1031,8 @@ class SWCModel(nx.Graph):
             r = uf_find(int(n))
             groups.setdefault(r, []).append(int(n))
 
-        # Create the merged model nodes
-        model = SWCModel()
+        # Create the merged graph (nx.Graph, not SWCModel)
+        model = nx.Graph()
         for rep, ids in groups.items():
             ids_sorted = sorted(ids)
             first = self.nodes[ids_sorted[0]]
@@ -1041,8 +1062,7 @@ class SWCModel(nx.Graph):
             if u != v:
                 model.add_edge(u, v)
 
-        # After merges, original tree mapping is not applicable
-        model._parents = {int(rep): None for rep in groups.keys()}
+        # Store reconnection metadata in graph attributes
         model.graph["reconnections"] = pairs
         logger.info(
             "make_cycle_connections merged=%d groups=%d nodes=%d edges=%d",

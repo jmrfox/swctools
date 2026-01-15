@@ -1,3 +1,5 @@
+import pytest
+import networkx as nx
 from swctools import Segment, frustum_mesh, batch_frusta, FrustaSet, SWCModel
 
 
@@ -39,3 +41,24 @@ def test_frustaset_from_swc_model_and_arrays():
     # Basic shape checks
     assert len(x) == len(y) == len(z) == len(fr.vertices)
     assert len(i) == len(j) == len(k) == len(fr.faces)
+
+
+def test_frustaset_validates_required_attributes():
+    """Verify FrustaSet.from_swc_model validates that nodes have x, y, z, r attributes."""
+    # Create a graph missing required attributes
+    G = nx.Graph()
+    G.add_node(1, x=0.0, y=0.0, z=0.0)  # Missing 'r'
+    G.add_node(2, x=1.0, y=0.0, z=0.0, r=0.5)
+    G.add_edge(1, 2)
+
+    with pytest.raises(ValueError, match="Node 1 missing required attributes.*'r'"):
+        FrustaSet.from_swc_model(G, sides=8)
+
+    # Create a graph with all required attributes - should work
+    G2 = nx.Graph()
+    G2.add_node(1, x=0.0, y=0.0, z=0.0, r=1.0, t=1)
+    G2.add_node(2, x=1.0, y=0.0, z=0.0, r=0.5, t=3)
+    G2.add_edge(1, 2)
+
+    fr = FrustaSet.from_swc_model(G2, sides=8, end_caps=False)
+    assert fr.segment_count == 1

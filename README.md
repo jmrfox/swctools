@@ -12,7 +12,8 @@ Demo notebooks can be found in the `notebooks` directory.
 
 - **SWC parser**: `parse_swc()` with robust error messages, header reconnection directives, iterable/file/string sources
 - **Data model**:
-  - `SWCModel` (`networkx.Graph`) with undirected storage and an internal parent map for original SWC directed tree relations; supports `make_cycle_connections()` to apply `# CYCLE_BREAK reconnect i j` merges (union-find)
+  - `SWCModel` (`networkx.Graph`) represents valid SWC directed tree structures with undirected storage and an internal parent map for original SWC directed tree relations
+  - `make_cycle_connections()` applies `# CYCLE_BREAK reconnect i j` merges (union-find) and returns `nx.Graph` (not `SWCModel`) since the result may contain cycles
   - Shared graph metrics via `_graph_attributes()` and `print_attributes()` helpers
 - **Geometry**:
   - `Segment` dataclass and frustum meshing utilities (`frustum_mesh`, `batch_frusta`)
@@ -30,11 +31,12 @@ Demo notebooks can be found in the `notebooks` directory.
 
 ## Design overview
 
-- `SWCModel` (`networkx.Graph` with parent map)
+- `SWCModel` (`networkx.Graph` with parent map) **— represents valid SWC directed tree structures only**
   - Nodes keyed by SWC id `n`
   - Node attributes: `x`, `y`, `z`, `r` (radius), `t` (tag), and optional metadata
   - `_parents` preserves the original directed parent of each node; `roots()`, `parent_of()`, `path_to_root()` use this map
-  - `make_cycle_connections()` merges reconnection pairs and returns a merged model (can include cycles)
+  - Methods like `to_swc_file()` rely on the tree structure and only work correctly for valid SWC trees
+  - `make_cycle_connections()` merges reconnection pairs and **returns `nx.Graph`** (not `SWCModel`) since the result may contain cycles
 - `Segment` dataclass and `FrustaSet` (batched frusta mesh)
 - `FrustaSet` ordering utilities: `print_segment_order()`, `reordered(...)`, and `per_segment_face_slices()` to help align external per-segment arrays with mesh order
 - `PointSet` (batched spheres for overlay points)
