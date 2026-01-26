@@ -871,6 +871,52 @@ class FrustaSet:
             edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
         )
 
+    def nearest_frustum_index(self, xyz: Sequence[float]) -> int:
+        """Return the index of the frustum whose axis segment is closest to `xyz`."""
+        if self.segment_count == 0:
+            raise ValueError("FrustaSet is empty")
+        if len(xyz) != 3:
+            raise ValueError("xyz must be a sequence of length 3")
+
+        p = (float(xyz[0]), float(xyz[1]), float(xyz[2]))
+
+        def point_segment_distance2(p_: Point3, a: Point3, b: Point3) -> float:
+            ab = v_sub(b, a)
+            ap = v_sub(p_, a)
+            denom = v_dot(ab, ab)
+            if denom <= 0.0:
+                # Degenerate segment: treat as distance to a
+                d = v_sub(p_, a)
+                return v_dot(d, d)
+            t = v_dot(ap, ab) / denom
+            if t <= 0.0:
+                q = a
+            elif t >= 1.0:
+                q = b
+            else:
+                q = v_add(a, v_mul(ab, t))
+            diff = v_sub(p_, q)
+            return v_dot(diff, diff)
+
+        best_idx = 0
+        best_d2 = float("inf")
+        for idx, s in enumerate(self.segments):
+            d2 = point_segment_distance2(p, s.a, s.b)
+            if d2 < best_d2:
+                best_d2 = d2
+                best_idx = idx
+
+        logger = logging.getLogger(__name__)
+        logger.debug(
+            "FrustaSet.nearest_frustum_index xyz=(%.6f,%.6f,%.6f) idx=%d d=%.6f",
+            p[0],
+            p[1],
+            p[2],
+            best_idx,
+            math.sqrt(best_d2),
+        )
+        return best_idx
+
     # ----------------------------------------------------------------------------------
     # Segment ordering utilities
     # ----------------------------------------------------------------------------------
