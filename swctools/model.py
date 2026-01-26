@@ -83,13 +83,12 @@ def _graph_attributes(G: nx.Graph | nx.DiGraph) -> dict[str, Any]:
     }
 
 
-class SWCModel(nx.Graph):
+class SWCModel(nx.DiGraph):
     """SWC morphology graph representing a valid directed tree structure.
 
     SWCModel conforms to the SWC format specification, which requires a directed
-    tree structure (no cycles). The underlying storage is an undirected nx.Graph,
-    but the original directed parent -> child relationships are preserved via an
-    internal `_parents` map.
+    tree structure (no cycles). The underlying storage is a directed nx.DiGraph
+    that preserves the original parent -> child relationships from the SWC format.
 
     Nodes are keyed by SWC id `n` and store attributes:
     - t: int (tag)
@@ -105,7 +104,7 @@ class SWCModel(nx.Graph):
     """
 
     def __init__(self) -> None:
-        # Initialize as a plain Graph; we don't need multigraph features.
+        # Initialize as a directed DiGraph; we don't need multigraph features.
         super().__init__()
         self._parents: dict[int, int | None] = {}
 
@@ -159,7 +158,7 @@ class SWCModel(nx.Graph):
                 line=rec.line,
             )
 
-        # Second pass: record tree parents and add undirected edges
+        # Second pass: add directed edges (parent -> child) and maintain _parents for compatibility
         pmap: dict[int, int | None] = {}
         for rec in rec_values:
             parent = None if rec.parent == -1 else rec.parent
@@ -207,11 +206,12 @@ class SWCModel(nx.Graph):
     # ----------------------------------------------------------------------------------------------
     def roots(self) -> list[int]:
         """Return nodes with no parent in the original SWC tree."""
-        return [n for n, p in self._parents.items() if p is None]
+        return [n for n in self.nodes if self.in_degree(n) == 0]
 
     def parent_of(self, n: int) -> int | None:
         """Return the parent id of node n from the original SWC tree (or None)."""
-        return self._parents.get(n)
+        preds = list(self.predecessors(n))
+        return preds[0] if preds else None
 
     def children_of(self, node_id: int) -> list[int]:
         """Return list of child node IDs in the original SWC tree.
@@ -226,7 +226,7 @@ class SWCModel(nx.Graph):
         list[int]
             List of node IDs that have node_id as their parent.
         """
-        return [n for n, p in self._parents.items() if p == node_id]
+        return list(self.successors(node_id))
 
     def path_to_root(self, n: int) -> list[int]:
         """Return the path from node n up to its root, inclusive.
@@ -484,21 +484,17 @@ class SWCModel(nx.Graph):
         list[int]
             List of node IDs that have no children.
         """
-        children_counts = {n: 0 for n in self.nodes}
-        for n, p in self._parents.items():
-            if p is not None:
-                children_counts[p] = children_counts.get(p, 0) + 1
-        return [n for n, count in children_counts.items() if count == 0]
+        return [n for n in self.nodes if self.out_degree(n) == 0]
 
     def branch_points(self) -> list[int]:
-        """Return branch point nodes (nodes with degree > 2).
+        """Return branch point nodes (nodes with more than one child).
 
         Returns
         -------
         list[int]
-            List of node IDs with more than 2 neighbors in the graph.
+            List of node IDs with out-degree > 1 (branch points in the directed tree).
         """
-        return [n for n in self.nodes if self.degree(n) > 2]
+        return [n for n in self.nodes if self.out_degree(n) > 1]
 
     def get_subtree(self, root_id: int) -> list[int]:
         """Return all node IDs in the subtree rooted at root_id.
@@ -590,16 +586,22 @@ class SWCModel(nx.Graph):
                 elif strict and r == 0:
                     issues.append(f"Node {node_id} has zero radius")
 
-        # Check parent references
-        for node_id, parent_id in self._parents.items():
-            if parent_id is not None and parent_id not in self.nodes:
+        # Check parent references using DiGraph structure
+        for node_id in self.nodes:
+            preds = list(self.predecessors(node_id))
+            if len(preds) > 1:
                 issues.append(
-                    f"Node {node_id} has invalid parent reference: {parent_id}"
+                    f"Node {node_id} has multiple parents: {preds}"
                 )
+            for parent_id in preds:
+                if parent_id not in self.nodes:
+                    issues.append(
+                        f"Node {node_id} has invalid parent reference: {parent_id}"
+                    )
 
         # Check for disconnected components (if strict)
         if strict:
-            num_components = nx.number_connected_components(self)
+            num_components = nx.number_weakly_connected_components(self)
             if num_components > 1:
                 issues.append(f"Graph has {num_components} disconnected components")
 
@@ -720,7 +722,7 @@ class SWCModel(nx.Graph):
                 y = fmt.format(float(attrs.get("y", 0.0)))
                 z = fmt.format(float(attrs.get("z", 0.0)))
                 r = fmt.format(float(attrs.get("r", 0.0)))
-                parent = self._parents.get(n)
+                parent = self.parent_of(n)
                 pval = -1 if parent is None else int(parent)
                 f.write(f"{n} {t} {x} {y} {z} {r} {pval}\n")
         logger.info(
@@ -884,6 +886,7 @@ class SWCModel(nx.Graph):
         attrs.update(kwargs)
 
         self.add_node(node_id, **attrs)
+        # Maintain _parents map for compatibility with existing methods
         self._parents[node_id] = parent
 
         if parent is not None:
@@ -922,18 +925,22 @@ class SWCModel(nx.Graph):
         if node_id not in self.nodes:
             raise ValueError(f"Node {node_id} does not exist")
 
-        parent = self._parents.get(node_id)
-        children = [n for n, p in self._parents.items() if p == node_id]
+        parent = self.parent_of(node_id)
+        children = list(self.successors(node_id))
 
         if reconnect_children and parent is not None:
             for child in children:
-                self._parents[child] = parent
                 self.add_edge(parent, child)
+                # Update _parents map for compatibility
+                self._parents[child] = parent
         else:
             for child in children:
+                # Update _parents map for compatibility
                 self._parents[child] = None
 
-        del self._parents[node_id]
+        # Remove from _parents map
+        if node_id in self._parents:
+            del self._parents[node_id]
         self.remove_node(node_id)
 
         logger.debug(

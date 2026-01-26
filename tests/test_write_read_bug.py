@@ -28,9 +28,9 @@ def compare_models(original: SWCModel, loaded: SWCModel, label: str = ""):
     print(f"  Loaded:   {loaded.number_of_edges()}")
     print(f"  Match: {original.number_of_edges() == loaded.number_of_edges()}")
 
-    # Components
-    orig_components = nx.number_connected_components(original)
-    load_components = nx.number_connected_components(loaded)
+    # Components (use weakly connected components for directed graphs)
+    orig_components = nx.number_weakly_connected_components(original)
+    load_components = nx.number_weakly_connected_components(loaded)
     print(f"\nConnected Components:")
     print(f"  Original: {orig_components}")
     print(f"  Loaded:   {load_components}")
@@ -110,7 +110,7 @@ def test_simple_tree():
         loaded = SWCModel.from_swc_file(temp_path)
 
         match = compare_models(original, loaded, "Simple Tree")
-        return match
+        assert match, "Models should match for Simple Tree"
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
@@ -140,7 +140,7 @@ def test_branching_tree():
         loaded = SWCModel.from_swc_file(temp_path)
 
         match = compare_models(original, loaded, "Branching Tree")
-        return match
+        assert match, "Models should match for Branching Tree"
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
@@ -171,7 +171,7 @@ def test_multiple_roots():
         loaded = SWCModel.from_swc_file(temp_path)
 
         match = compare_models(original, loaded, "Multiple Roots")
-        return match
+        assert match, "Models should match for Multiple Roots"
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
@@ -202,7 +202,7 @@ def test_with_reconnections():
         loaded = SWCModel.from_swc_file(temp_path)
 
         match = compare_models(original, loaded, "With Reconnections")
-        return match
+        assert match, "Models should match for With Reconnections"
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
@@ -257,7 +257,7 @@ def test_after_make_cycle_connections():
     passed = is_nx_graph and is_not_swcmodel and not has_parents
     print(f"\n  Test result: {'PASS' if passed else 'FAIL'}")
 
-    return passed
+    assert passed, "make_cycle_connections() should return nx.Graph, not SWCModel"
 
 
 def main():
