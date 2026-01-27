@@ -802,6 +802,107 @@ def animate_frusta_timeseries(
     time_domain: Sequence[float],
     amplitudes: Sequence[Sequence[float]],
     *,
+    cmap: str = "viridis",
+    clim: tuple[float, float] | None = None,
+    scalar_bar: bool = True,
+    scalar_bar_args: dict | None = None,
+    fps: int = 30,
+    stride: int = 1,
+    window_size: tuple[int, int] = (900, 700),
+    background: str = "white",
+    show_axes: bool = False,
+    notebook: bool = False,
+    off_screen: bool = False,
+    movie_path: str | None = None,
+):
+    """Animate per-frustum voltage values over time using PyVista.
+
+    Parameters
+    ----------
+    frusta : FrustaSet
+        Batched frusta mesh representing the neuron compartments.
+    time_domain : Sequence[float]
+        Time values for each frame. Length must match the time axis of amplitudes.
+    amplitudes : Sequence[Sequence[float]]
+        Time series V_i(t) shaped (T, N), where T = len(time_domain) and
+        N = frusta.n_frusta. Each time step provides one scalar per frustum.
+    cmap : str
+        Matplotlib colormap name (default: "viridis").
+    clim : tuple[float, float] | None
+        Color limits (vmin, vmax). If None, inferred from amplitudes.
+    scalar_bar : bool
+        Whether to show scalar bar (default: True).
+    scalar_bar_args : dict | None
+        Additional arguments passed to scalar bar configuration.
+    fps : int
+        Frames per second for animation/movie (default: 30).
+    stride : int
+        Temporal downsampling factor - use every `stride` time steps (default: 1).
+    window_size : tuple[int, int]
+        Render window size in pixels (default: (900, 700)).
+    background : str
+        Background color (default: "white").
+    show_axes : bool
+        Show orientation axes (default: False).
+    notebook : bool
+        Enable notebook-friendly rendering (default: False).
+    off_screen : bool
+        Enable off-screen rendering, required for movie export (default: False).
+    movie_path : str | None
+        If provided, renders animation to a movie file (e.g., "voltage.mp4").
+
+    Returns
+    -------
+    pyvista.Plotter
+        The plotter instance for further interaction.
+    """
+    from .animation import animate_compartment_voltage, _frusta_to_pyvista_meshes
+    import numpy as np
+
+    logger = logging.getLogger(__name__)
+
+    logger.info(
+        "animate_frusta_timeseries called: n_frusta=%d time_steps=%d fps=%d",
+        frusta.n_frusta,
+        len(time_domain),
+        fps,
+    )
+
+    # Convert FrustaSet to individual PyVista meshes
+    logger.debug("Converting FrustaSet to PyVista meshes...")
+    segment_meshes = _frusta_to_pyvista_meshes(frusta)
+
+    # Convert amplitudes to numpy array with shape (T, N)
+    logger.debug("Converting amplitudes to numpy array...")
+    voltage_traces = np.array(amplitudes, dtype=np.float32)
+    logger.info("Data prepared: voltage_traces shape=%s", voltage_traces.shape)
+
+    # Call the PyVista animation function
+    logger.info("Calling animate_compartment_voltage...")
+    return animate_compartment_voltage(
+        time_domain=time_domain,
+        voltage_traces=voltage_traces,
+        segment_meshes=segment_meshes,
+        cmap=cmap,
+        clim=clim,
+        scalar_bar=scalar_bar,
+        scalar_bar_args=scalar_bar_args,
+        fps=fps,
+        stride=stride,
+        window_size=window_size,
+        background=background,
+        show_axes=show_axes,
+        notebook=notebook,
+        off_screen=off_screen,
+        movie_path=movie_path,
+    )
+
+
+def OLD_animate_frusta_timeseries(
+    frusta: FrustaSet,
+    time_domain: Sequence[float],
+    amplitudes: Sequence[Sequence[float]],
+    *,
     colorscale: str | list = "Viridis",
     cmin: Optional[float] = None,
     cmax: Optional[float] = None,
