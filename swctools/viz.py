@@ -817,7 +817,7 @@ def animate_frusta_timeseries(
     frusta: FrustaSet
         Batched frusta mesh. Optionally scaled via `radius_scale` before rendering.
     values: Sequence[Sequence[float]]
-        Time series V_i(t) shaped [T][N], where N = `frusta.n_frusta`.
+        Time series V_i(t) shaped (T, N), where N = `frusta.n_frusta`.
         Each time step provides one scalar per frustum in the current order.
     colorscale: str | list
         Plotly colorscale for mapping intensities.
