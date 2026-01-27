@@ -799,7 +799,8 @@ def plot_model(
 
 def animate_frusta_timeseries(
     frusta: FrustaSet,
-    values: Sequence[Sequence[float]],
+    time_domain: Sequence[float],
+    amplitudes: Sequence[Sequence[float]],
     *,
     colorscale: str | list = "Viridis",
     cmin: Optional[float] = None,
@@ -816,8 +817,10 @@ def animate_frusta_timeseries(
     ----------
     frusta: FrustaSet
         Batched frusta mesh. Optionally scaled via `radius_scale` before rendering.
-    values: Sequence[Sequence[float]]
-        Time series V_i(t) shaped (T, N), where N = `frusta.n_frusta`.
+    time_domain: Sequence[float]
+        Time values for each frame. Length must match the time axis of amplitudes.
+    amplitudes: Sequence[Sequence[float]]
+        Time series V_i(t) shaped (T, N), where T = len(time_domain) and N = `frusta.n_frusta`.
         Each time step provides one scalar per frustum in the current order.
     colorscale: str | list
         Plotly colorscale for mapping intensities.
@@ -841,13 +844,19 @@ def animate_frusta_timeseries(
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
     slices = list(fr.frustum_face_slices_map().values())
-    if len(values) == 0:
-        raise ValueError("values must have at least one time step")
-    T = len(values)
-    N = fr.n_frusta
-    if any(len(vt) != N for vt in values):
+
+    # Validate dimensions
+    if len(amplitudes) == 0:
+        raise ValueError("amplitudes must have at least one time step")
+    if len(time_domain) != len(amplitudes):
         raise ValueError(
-            "each time step must have N values, matching frusta.n_frusta"
+            f"time_domain length ({len(time_domain)}) must match amplitudes time axis length ({len(amplitudes)})"
+        )
+    T = len(amplitudes)
+    N = fr.n_frusta
+    if any(len(vt) != N for vt in amplitudes):
+        raise ValueError(
+            f"each time step must have N values, matching frusta.n_frusta ({N})"
         )
 
     def faces_intensity(vt: Sequence[float]) -> list[float]:
@@ -857,13 +866,13 @@ def animate_frusta_timeseries(
         return arr
 
     if cmin is None or cmax is None:
-        vmin = min(min(vt) for vt in values)
-        vmax = max(max(vt) for vt in values)
+        vmin = min(min(vt) for vt in amplitudes)
+        vmax = max(max(vt) for vt in amplitudes)
         if cmin is None:
             cmin = float(vmin)
         if cmax is None:
             cmax = float(vmax)
-    init = values[0]
+    init = amplitudes[0]
     intensity0 = faces_intensity(init)
     mesh = go.Mesh3d(
         x=x,
@@ -883,11 +892,11 @@ def animate_frusta_timeseries(
         name="frusta",
     )
     frames = []
-    for t, vt in enumerate(values):
+    for t, vt in enumerate(amplitudes):
         intens = faces_intensity(vt)
         frames.append(
             go.Frame(
-                name=f"t={t}",
+                name=f"time={time_domain[t]:.3f}",
                 data=[
                     go.Mesh3d(
                         x=x,
@@ -910,10 +919,10 @@ def animate_frusta_timeseries(
     frame_duration = int(1000 / max(1, fps))
     slider_steps = [
         {
-            "label": f"{t}",
+            "label": f"{time_domain[t]:.3f}",
             "method": "animate",
             "args": [
-                [f"t={t}"],
+                [f"time={time_domain[t]:.3f}"],
                 {
                     "mode": "immediate",
                     "frame": {"duration": 0},
