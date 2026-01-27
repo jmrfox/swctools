@@ -10,6 +10,13 @@ plugins:
   - search
   - mkdocstrings:
       default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_section_style: table
+            show_signature: true
+            show_signature_annotations: true
+            separate_signature: true
 
 nav:
   - Home: index.md
