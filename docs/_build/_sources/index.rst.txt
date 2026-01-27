@@ -12,8 +12,9 @@ Jupyter-first toolbox for SWC parsing, modeling, analysis, geometry, and 3D visu
    :caption: Contents:
 
    installation
-   examples
+   visualization
    api
+   demo
 
 Quick start
 -----------
@@ -47,4 +48,4 @@ Quick start
    fig_slider = plot_model(swc_model=swc_model, frusta=fr, slider=True, min_scale=0.0, max_scale=1.0, steps=21)
    fig_slider.show()
 
-See the :doc:`examples` and :doc:`api` pages for details.
+See the :doc:`visualization` and :doc:`api` pages for details.

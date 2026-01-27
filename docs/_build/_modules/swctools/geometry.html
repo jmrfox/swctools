@@ -1,0 +1,1513 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>swctools.geometry &#8212; swctools 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/swctools/geometry';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">swctools 0.1.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../visualization.html">
+    Visualization
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../demo.html">
+    Demo
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmrfox/swctools" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../visualization.html">
+    Visualization
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../demo.html">
+    Demo
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/jmrfox/swctools" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">swctools.geometry</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for swctools.geometry</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Geometry utilities for frustum mesh generation.</span>
+
+<span class="sd">- Frustum: oriented frustum defined by two points with radii</span>
+<span class="sd">- frustum_mesh: build vertices/faces for a single frustum</span>
+<span class="sd">- batch_frusta: combine multiple frusta into one mesh</span>
+
+<span class="sd">Implementation is pure-Python (standard library math), returning lists</span>
+<span class="sd">of vertices and triangular faces suitable for Plotly Mesh3d or other</span>
+<span class="sd">renderers after light conversion.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">SWCModel</span>
+
+<span class="c1"># Types</span>
+<span class="n">Point3</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+<span class="n">Vec3</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+<span class="n">Face</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Vector helpers (pure Python)</span>
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec3</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_sub</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec3</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_mul</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec3</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_dot</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_cross</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec3</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_norm</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v_dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">v_unit</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec3</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">v_norm</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Core structures</span>
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="Frustum">
+<a class="viewcode-back" href="../../api.html#swctools.Frustum">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Frustum</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Oriented frustum between endpoints `a` and `b`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a, b: Point3</span>
+<span class="sd">        Endpoints in model/world coordinates.</span>
+<span class="sd">    ra, rb: float</span>
+<span class="sd">        Radii at `a` and `b`.</span>
+<span class="sd">    tag: int</span>
+<span class="sd">        Optional tag for the frustum.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span><span class="p">:</span> <span class="n">Point3</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">Point3</span>
+    <span class="n">ra</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">rb</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">tag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="Frustum.vector">
+<a class="viewcode-back" href="../../api.html#swctools.Frustum.vector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">v_sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Frustum.length">
+<a class="viewcode-back" href="../../api.html#swctools.Frustum.length">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">v_norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="Frustum.midpoint">
+<a class="viewcode-back" href="../../api.html#swctools.Frustum.midpoint">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">midpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Frustum.scale">
+<a class="viewcode-back" href="../../api.html#swctools.Frustum.scale">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scalar</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Frustum&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `Frustum` uniformly scaled by `scalar` (positions and radii).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;scalar must be a number&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">az</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+        <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
+        <span class="k">return</span> <span class="n">Frustum</span><span class="p">(</span>
+            <span class="n">a</span><span class="o">=</span><span class="p">(</span><span class="n">ax</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">ay</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">az</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">),</span>
+            <span class="n">b</span><span class="o">=</span><span class="p">(</span><span class="n">bx</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">by</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">bz</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">),</span>
+            <span class="n">ra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span>
+            <span class="n">rb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rb</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span>
+            <span class="n">tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Frames and rings</span>
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_orthonormal_frame</span><span class="p">(</span><span class="n">z_axis</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec3</span><span class="p">,</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">Vec3</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return (U, V, W) forming a right-handed orthonormal basis with W along z_axis.</span>
+
+<span class="sd">    Handles near-colinearity by choosing a stable temporary axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">v_unit</span><span class="p">(</span><span class="n">z_axis</span><span class="p">)</span>
+    <span class="c1"># Fallback if zero vector</span>
+    <span class="k">if</span> <span class="n">W</span> <span class="o">==</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># Pick a vector not parallel to W</span>
+    <span class="n">abs_w</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">if</span> <span class="n">abs_w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.9</span> <span class="k">else</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">v_cross</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">v_unit</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="c1"># If still degenerate (happens when tmp ~ W), switch tmp</span>
+    <span class="k">if</span> <span class="n">U</span> <span class="o">==</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">U</span> <span class="o">=</span> <span class="n">v_unit</span><span class="p">(</span><span class="n">v_cross</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">v_cross</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">U</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_circle_ring</span><span class="p">(</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">Point3</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">U</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">Vec3</span><span class="p">,</span> <span class="n">sides</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]:</span>
+    <span class="n">pts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sides</span><span class="p">):</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">k</span> <span class="o">/</span> <span class="n">sides</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">v_mul</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">c</span><span class="p">),</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">s</span><span class="p">))</span>
+        <span class="n">pts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v_add</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">pts</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Mesh generation</span>
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="frustum_mesh">
+<a class="viewcode-back" href="../../api.html#swctools.frustum_mesh">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">frustum_mesh</span><span class="p">(</span>
+    <span class="n">seg</span><span class="p">:</span> <span class="n">Frustum</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sides</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">end_caps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a frustum mesh for a single `Frustum`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (vertices, faces):</span>
+<span class="sd">        - vertices: List[Point3]</span>
+<span class="sd">        - faces: List[Face], each = (i, j, k) indexing into `vertices`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Local frame</span>
+    <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">_orthonormal_frame</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span>
+
+    <span class="n">ring_a</span> <span class="o">=</span> <span class="n">_circle_ring</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">seg</span><span class="o">.</span><span class="n">ra</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">sides</span><span class="p">)</span>
+    <span class="n">ring_b</span> <span class="o">=</span> <span class="n">_circle_ring</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">seg</span><span class="o">.</span><span class="n">rb</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">sides</span><span class="p">)</span>
+
+    <span class="n">vertices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">vertices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ring_a</span><span class="p">)</span>
+    <span class="n">vertices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ring_b</span><span class="p">)</span>
+
+    <span class="n">faces</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Side faces (two triangles per quad)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sides</span><span class="p">):</span>
+        <span class="n">a0</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">a1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">sides</span>
+        <span class="n">b0</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">sides</span>
+        <span class="n">b1</span> <span class="o">=</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">sides</span><span class="p">)</span> <span class="o">+</span> <span class="n">sides</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a0</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">))</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a0</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">a1</span><span class="p">))</span>
+
+    <span class="c1"># Optional end caps</span>
+    <span class="k">if</span> <span class="n">end_caps</span> <span class="ow">and</span> <span class="n">seg</span><span class="o">.</span><span class="n">ra</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">ca</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+        <span class="n">vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sides</span><span class="p">):</span>
+            <span class="n">a0</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">a1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">sides</span>
+            <span class="c1"># Wind towards center for cap</span>
+            <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ca</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a0</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">end_caps</span> <span class="ow">and</span> <span class="n">seg</span><span class="o">.</span><span class="n">rb</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">cb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+        <span class="n">vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sides</span><span class="p">):</span>
+            <span class="n">b0</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">sides</span>
+            <span class="n">b1</span> <span class="o">=</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">sides</span><span class="p">)</span> <span class="o">+</span> <span class="n">sides</span>
+            <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cb</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">b1</span><span class="p">))</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;frustum_mesh sides=</span><span class="si">%d</span><span class="s2"> end_caps=</span><span class="si">%s</span><span class="s2"> verts=</span><span class="si">%d</span><span class="s2"> faces=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">sides</span><span class="p">,</span>
+        <span class="n">end_caps</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">vertices</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">faces</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span></div>
+
+
+
+<div class="viewcode-block" id="batch_frusta">
+<a class="viewcode-back" href="../../api.html#swctools.batch_frusta">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">batch_frusta</span><span class="p">(</span>
+    <span class="n">frusta</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Frustum</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">sides</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">end_caps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch multiple frusta into a single mesh.</span>
+
+<span class="sd">    Returns a concatenated list of `vertices` and `faces` with the proper index offsets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_vertices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_faces</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">frusta</span><span class="p">:</span>
+        <span class="n">v</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">frustum_mesh</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="n">sides</span><span class="o">=</span><span class="n">sides</span><span class="p">,</span> <span class="n">end_caps</span><span class="o">=</span><span class="n">end_caps</span><span class="p">)</span>
+        <span class="n">all_vertices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="c1"># Re-index faces</span>
+        <span class="n">all_faces</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">a</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">b</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">c</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="n">f</span><span class="p">])</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;batch_frusta count=</span><span class="si">%d</span><span class="s2"> sides=</span><span class="si">%d</span><span class="s2"> end_caps=</span><span class="si">%s</span><span class="s2"> verts=</span><span class="si">%d</span><span class="s2"> faces=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">frusta</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frusta</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">sides</span><span class="p">,</span>
+        <span class="n">end_caps</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">all_vertices</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">all_faces</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_vertices</span><span class="p">,</span> <span class="n">all_faces</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+<span class="c1"># Spheres for point sets</span>
+<span class="c1"># --------------------------------------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sphere_mesh</span><span class="p">(</span>
+    <span class="n">center</span><span class="p">:</span> <span class="n">Point3</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stacks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">slices</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a low-res UV sphere mesh at `center` with given `radius`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stacks: int</span>
+<span class="sd">        Number of latitudinal divisions (&gt;= 2).</span>
+<span class="sd">    slices: int</span>
+<span class="sd">        Number of longitudinal divisions (&gt;= 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stacks</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">stacks</span><span class="p">))</span>
+    <span class="n">slices</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">slices</span><span class="p">))</span>
+
+    <span class="n">verts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">faces</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Generate vertices (excluding poles initially)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">stacks</span><span class="p">):</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">stacks</span><span class="p">)</span>  <span class="c1"># (0, pi)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">ct</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">slices</span><span class="p">):</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">/</span> <span class="n">slices</span><span class="p">)</span>
+            <span class="n">sp</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="n">cp</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">st</span> <span class="o">*</span> <span class="n">cp</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">st</span> <span class="o">*</span> <span class="n">sp</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">ct</span>
+            <span class="n">verts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+
+    <span class="c1"># Add poles</span>
+    <span class="n">north_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">verts</span><span class="p">)</span>
+    <span class="n">verts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">radius</span><span class="p">))</span>
+    <span class="n">south_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">verts</span><span class="p">)</span>
+    <span class="n">verts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">radius</span><span class="p">))</span>
+
+    <span class="c1"># Index helper for ring vertices</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vid</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="c1"># i in [0, stacks-2], j in [0, slices-1]</span>
+        <span class="k">return</span> <span class="n">i</span> <span class="o">*</span> <span class="n">slices</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">%</span> <span class="n">slices</span><span class="p">)</span>
+
+    <span class="c1"># Faces between rings</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stacks</span> <span class="o">-</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">slices</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+            <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+
+    <span class="c1"># Triangles to poles</span>
+    <span class="c1"># Top ring (i = 0) connects to north pole</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">slices</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">north_idx</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+    <span class="c1"># Bottom ring (i = stacks-2) connects to south pole</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">stacks</span> <span class="o">-</span> <span class="mi">2</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">slices</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">vid</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">south_idx</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;sphere_mesh stacks=</span><span class="si">%d</span><span class="s2"> slices=</span><span class="si">%d</span><span class="s2"> verts=</span><span class="si">%d</span><span class="s2"> faces=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">stacks</span><span class="p">,</span>
+        <span class="n">slices</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">verts</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">faces</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">batch_spheres</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Point3</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">stacks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">slices</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch multiple spheres into a single mesh.</span>
+
+<span class="sd">    Returns concatenated `vertices` and reindexed `faces`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_vertices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_faces</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+        <span class="n">v</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">sphere_mesh</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">stacks</span><span class="o">=</span><span class="n">stacks</span><span class="p">,</span> <span class="n">slices</span><span class="o">=</span><span class="n">slices</span><span class="p">)</span>
+        <span class="n">all_vertices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">all_faces</span><span class="o">.</span><span class="n">extend</span><span class="p">([(</span><span class="n">a</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">b</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">c</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="n">f</span><span class="p">])</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;batch_spheres count=</span><span class="si">%d</span><span class="s2"> stacks=</span><span class="si">%d</span><span class="s2"> slices=</span><span class="si">%d</span><span class="s2"> verts=</span><span class="si">%d</span><span class="s2"> faces=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">stacks</span><span class="p">,</span>
+        <span class="n">slices</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">all_vertices</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">all_faces</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_vertices</span><span class="p">,</span> <span class="n">all_faces</span>
+
+
+<div class="viewcode-block" id="PointSet">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointSet</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A batched mesh of small spheres placed at given 3D points.&quot;&quot;&quot;</span>
+
+    <span class="n">vertices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span>
+    <span class="n">faces</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span>
+    <span class="n">base_radius</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">stacks</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">slices</span><span class="p">:</span> <span class="nb">int</span>
+
+<div class="viewcode-block" id="PointSet.from_points">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.from_points">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_points</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Point3</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">base_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">stacks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="n">slices</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a batched low-res spheres mesh from a list of 3D points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points: sequence of (x, y, z)</span>
+<span class="sd">            Sphere centers.</span>
+<span class="sd">        base_radius: float</span>
+<span class="sd">            Sphere radius used when building the mesh (scaled later via `scaled()`).</span>
+<span class="sd">        stacks, slices: int</span>
+<span class="sd">            Sphere tessellation parameters (&gt;=2 and &gt;=3 respectively).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_spheres</span><span class="p">(</span>
+            <span class="n">points</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">base_radius</span><span class="p">,</span> <span class="n">stacks</span><span class="o">=</span><span class="n">stacks</span><span class="p">,</span> <span class="n">slices</span><span class="o">=</span><span class="n">slices</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;PointSet.from_points n=</span><span class="si">%d</span><span class="s2"> base_radius=</span><span class="si">%s</span><span class="s2"> stacks=</span><span class="si">%d</span><span class="s2"> slices=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
+            <span class="n">base_radius</span><span class="p">,</span>
+            <span class="n">stacks</span><span class="p">,</span>
+            <span class="n">slices</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">verts</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">points</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
+            <span class="n">base_radius</span><span class="o">=</span><span class="n">base_radius</span><span class="p">,</span>
+            <span class="n">stacks</span><span class="o">=</span><span class="n">stacks</span><span class="p">,</span>
+            <span class="n">slices</span><span class="o">=</span><span class="n">slices</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointSet.from_txt_file">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.from_txt_file">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_txt_file</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">base_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">stacks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="n">slices</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+        <span class="n">comments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointSet&quot;</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="n">comments</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;PointSet.from_txt_file failed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;ndim&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">pts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">row</span><span class="p">))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PointSet.from_txt_file path=</span><span class="si">%s</span><span class="s2"> n=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">pts</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_points</span><span class="p">(</span>
+            <span class="n">pts</span><span class="p">,</span> <span class="n">base_radius</span><span class="o">=</span><span class="n">base_radius</span><span class="p">,</span> <span class="n">stacks</span><span class="o">=</span><span class="n">stacks</span><span class="p">,</span> <span class="n">slices</span><span class="o">=</span><span class="n">slices</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointSet.to_mesh3d_arrays">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.to_mesh3d_arrays">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_mesh3d_arrays</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Plotly `Mesh3d` arrays `(x, y, z, i, j, k)` for this point set.&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">]</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span></div>
+
+
+<div class="viewcode-block" id="PointSet.to_txt_file">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.to_txt_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_txt_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%.6f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;PointSet.to_txt_file failed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointSet.scaled">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.scaled">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scaled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius_scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `PointSet` with all sphere radii scaled by `radius_scale`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">radius_scale</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_radius</span> <span class="o">*</span> <span class="n">radius_scale</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_spheres</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">stacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stacks</span><span class="p">,</span> <span class="n">slices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slices</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PointSet.scaled radius_scale=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">radius_scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PointSet</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">verts</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">points</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+            <span class="n">base_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_radius</span><span class="p">,</span>
+            <span class="n">stacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stacks</span><span class="p">,</span>
+            <span class="n">slices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slices</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointSet.scale">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.scale">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scalar</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `PointSet` with coordinates and radii scaled by `scalar`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;scalar must be a number&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scalar</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span>
+        <span class="p">]</span>
+        <span class="n">new_radius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_radius</span> <span class="o">*</span> <span class="n">scalar</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_spheres</span><span class="p">(</span>
+            <span class="n">new_points</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">new_radius</span><span class="p">,</span> <span class="n">stacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stacks</span><span class="p">,</span> <span class="n">slices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slices</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PointSet.scale scalar=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">scalar</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PointSet</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">verts</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">points</span><span class="o">=</span><span class="n">new_points</span><span class="p">,</span>
+            <span class="n">base_radius</span><span class="o">=</span><span class="n">new_radius</span><span class="p">,</span>
+            <span class="n">stacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stacks</span><span class="p">,</span>
+            <span class="n">slices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slices</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1"># --------------------------------------------------------------------------------------</span>
+    <span class="c1"># Frusta set derived from a SWCModel</span>
+    <span class="c1"># --------------------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="PointSet.project_onto_frusta">
+<a class="viewcode-back" href="../../api.html#swctools.PointSet.project_onto_frusta">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">project_onto_frusta</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">frusta</span><span class="p">:</span> <span class="s2">&quot;FrustaSet&quot;</span><span class="p">,</span> <span class="n">include_end_caps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Project each point to the nearest surface of the nearest frustum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        frusta: FrustaSet</span>
+<span class="sd">            Set of oriented frusta (as `Frustum`s) to project onto.</span>
+<span class="sd">        include_end_caps: Optional[bool]</span>
+<span class="sd">            If None (default), follow `frusta.end_caps`. If True/False, explicitly</span>
+<span class="sd">            include or ignore projections to the circular end caps.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PointSet</span>
+<span class="sd">            A new `PointSet` whose `points` have been moved onto the closest</span>
+<span class="sd">            surface points of the closest frusta; sphere mesh is rebuilt.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        For each input point, the algorithm iterates all frusta and</span>
+<span class="sd">        evaluates the squared distance to:</span>
+<span class="sd">        - The lateral surface: project the point to the frustum axis (clamped</span>
+<span class="sd">          t in [0,1]), interpolate radius r(t), then move along the radial</span>
+<span class="sd">          direction to the mantle.</span>
+<span class="sd">        - The end caps (optional): orthogonal distance to each cap plane; if</span>
+<span class="sd">          the projected point falls outside the disk, distance to the rim is used.</span>
+<span class="sd">        Degenerate frusta (zero length) are treated as a sphere of radius</span>
+<span class="sd">        max(ra, rb) centered at the endpoint.</span>
+<span class="sd">        Complexity is O(N_points × N_frusta), implemented in pure Python.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Resolve whether to include end-cap projections (explicit flag overrides frusta setting)</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">use_caps</span> <span class="o">=</span> <span class="n">frusta</span><span class="o">.</span><span class="n">end_caps</span> <span class="k">if</span> <span class="n">include_end_caps</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">include_end_caps</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-12</span>
+        <span class="c1"># Accumulate the new, projected points in order</span>
+        <span class="n">new_points</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;project_onto_frusta points=</span><span class="si">%d</span><span class="s2"> frusta=</span><span class="si">%d</span><span class="s2"> use_caps=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">),</span>
+            <span class="n">frusta</span><span class="o">.</span><span class="n">n_frusta</span><span class="p">,</span>
+            <span class="n">use_caps</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># For each input point, search all frusta and keep the closest surface point</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">):</span>
+            <span class="n">best_q</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">best_d2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+            <span class="c1"># Check every frustum</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">frusta</span><span class="o">.</span><span class="n">frusta</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">a</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">b</span>
+                <span class="n">ra</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">ra</span>
+                <span class="n">rb</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">rb</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+                <span class="n">l2</span> <span class="o">=</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                <span class="c1"># Degenerate frustum: treat as a sphere of radius max(ra, rb) at endpoint a</span>
+                <span class="k">if</span> <span class="n">l2</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                    <span class="n">R</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">rb</span><span class="p">)</span>
+                    <span class="n">ap</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+                    <span class="n">n</span> <span class="o">=</span> <span class="n">v_norm</span><span class="p">(</span><span class="n">ap</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                        <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">_orthonormal_frame</span><span class="p">((</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+                        <span class="n">q</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+                        <span class="n">d2</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">R</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">u</span> <span class="o">=</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+                        <span class="n">q</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+                        <span class="n">d2</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">R</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">R</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">d2</span> <span class="o">&lt;</span> <span class="n">best_d2</span><span class="p">:</span>
+                        <span class="n">best_d2</span> <span class="o">=</span> <span class="n">d2</span>
+                        <span class="n">best_q</span> <span class="o">=</span> <span class="n">q</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Project point onto frustum axis and clamp to [0, 1]</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="n">l2</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="n">t_clamped</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">elif</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                    <span class="n">t_clamped</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">t_clamped</span> <span class="o">=</span> <span class="n">t</span>
+                <span class="c1"># Local orthonormal frame with axis W along the frustum axis direction</span>
+                <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">_orthonormal_frame</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">t_clamped</span><span class="p">))</span>
+                <span class="n">nvec</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+                <span class="n">nr</span> <span class="o">=</span> <span class="n">v_norm</span><span class="p">(</span><span class="n">nvec</span><span class="p">)</span>
+                <span class="n">rt</span> <span class="o">=</span> <span class="n">ra</span> <span class="o">+</span> <span class="p">(</span><span class="n">rb</span> <span class="o">-</span> <span class="n">ra</span><span class="p">)</span> <span class="o">*</span> <span class="n">t_clamped</span>
+                <span class="k">if</span> <span class="n">nr</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                    <span class="n">normal_dir</span> <span class="o">=</span> <span class="n">U</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">normal_dir</span> <span class="o">=</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">nvec</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">nr</span><span class="p">)</span>
+                <span class="c1"># Nearest point on the lateral surface (mantle)</span>
+                <span class="n">q_lat</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">normal_dir</span><span class="p">,</span> <span class="n">rt</span><span class="p">))</span>
+                <span class="n">dl</span> <span class="o">=</span> <span class="n">nr</span> <span class="o">-</span> <span class="n">rt</span>
+                <span class="n">d2_lat</span> <span class="o">=</span> <span class="n">dl</span> <span class="o">*</span> <span class="n">dl</span>
+                <span class="k">if</span> <span class="n">d2_lat</span> <span class="o">&lt;</span> <span class="n">best_d2</span><span class="p">:</span>
+                    <span class="n">best_d2</span> <span class="o">=</span> <span class="n">d2_lat</span>
+                    <span class="n">best_q</span> <span class="o">=</span> <span class="n">q_lat</span>
+                <span class="c1"># Optionally consider projection to end caps (disks) and their rims</span>
+                <span class="k">if</span> <span class="n">use_caps</span><span class="p">:</span>
+                    <span class="c1"># Cap at endpoint a</span>
+                    <span class="n">sa</span> <span class="o">=</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">W</span><span class="p">)</span>
+                    <span class="n">pa</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">sa</span><span class="p">))</span>
+                    <span class="n">ra_len</span> <span class="o">=</span> <span class="n">v_norm</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ra_len</span> <span class="o">&lt;=</span> <span class="n">ra</span> <span class="o">+</span> <span class="n">eps</span><span class="p">:</span>
+                        <span class="n">q_ca</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pa</span><span class="p">)</span>
+                        <span class="n">d2_ca</span> <span class="o">=</span> <span class="n">sa</span> <span class="o">*</span> <span class="n">sa</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ra_len</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                            <span class="n">pa_dir</span> <span class="o">=</span> <span class="n">U</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">pa_dir</span> <span class="o">=</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">pa</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">ra_len</span><span class="p">)</span>
+                        <span class="n">rim_a</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">pa_dir</span><span class="p">,</span> <span class="n">ra</span><span class="p">))</span>
+                        <span class="n">diff_a</span> <span class="o">=</span> <span class="n">ra_len</span> <span class="o">-</span> <span class="n">ra</span>
+                        <span class="n">d2_ca</span> <span class="o">=</span> <span class="n">sa</span> <span class="o">*</span> <span class="n">sa</span> <span class="o">+</span> <span class="n">diff_a</span> <span class="o">*</span> <span class="n">diff_a</span>
+                        <span class="n">q_ca</span> <span class="o">=</span> <span class="n">rim_a</span>
+                    <span class="k">if</span> <span class="n">d2_ca</span> <span class="o">&lt;</span> <span class="n">best_d2</span><span class="p">:</span>
+                        <span class="n">best_d2</span> <span class="o">=</span> <span class="n">d2_ca</span>
+                        <span class="n">best_q</span> <span class="o">=</span> <span class="n">q_ca</span>
+                    <span class="c1"># Cap at endpoint b</span>
+                    <span class="n">sb</span> <span class="o">=</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">W</span><span class="p">)</span>
+                    <span class="n">pb</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">v_sub</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">sb</span><span class="p">))</span>
+                    <span class="n">rb_len</span> <span class="o">=</span> <span class="n">v_norm</span><span class="p">(</span><span class="n">pb</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">rb_len</span> <span class="o">&lt;=</span> <span class="n">rb</span> <span class="o">+</span> <span class="n">eps</span><span class="p">:</span>
+                        <span class="n">q_cb</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">pb</span><span class="p">)</span>
+                        <span class="n">d2_cb</span> <span class="o">=</span> <span class="n">sb</span> <span class="o">*</span> <span class="n">sb</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">rb_len</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                            <span class="n">pb_dir</span> <span class="o">=</span> <span class="n">U</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">pb_dir</span> <span class="o">=</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">pb</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">rb_len</span><span class="p">)</span>
+                        <span class="n">rim_b</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">pb_dir</span><span class="p">,</span> <span class="n">rb</span><span class="p">))</span>
+                        <span class="n">diff_b</span> <span class="o">=</span> <span class="n">rb_len</span> <span class="o">-</span> <span class="n">rb</span>
+                        <span class="n">d2_cb</span> <span class="o">=</span> <span class="n">sb</span> <span class="o">*</span> <span class="n">sb</span> <span class="o">+</span> <span class="n">diff_b</span> <span class="o">*</span> <span class="n">diff_b</span>
+                        <span class="n">q_cb</span> <span class="o">=</span> <span class="n">rim_b</span>
+                    <span class="k">if</span> <span class="n">d2_cb</span> <span class="o">&lt;</span> <span class="n">best_d2</span><span class="p">:</span>
+                        <span class="n">best_d2</span> <span class="o">=</span> <span class="n">d2_cb</span>
+                        <span class="n">best_q</span> <span class="o">=</span> <span class="n">q_cb</span>
+            <span class="c1"># Accept the best (closest) candidate for this point</span>
+            <span class="k">if</span> <span class="n">best_q</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">moved</span> <span class="o">=</span> <span class="n">v_norm</span><span class="p">(</span><span class="n">v_sub</span><span class="p">(</span><span class="n">best_q</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;project_onto_frusta point=</span><span class="si">%d</span><span class="s2"> moved=</span><span class="si">%.6f</span><span class="s2"> on_surface=True&quot;</span><span class="p">,</span>
+                    <span class="n">idx</span><span class="p">,</span>
+                    <span class="n">moved</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">new_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_q</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;project_onto_frusta point=</span><span class="si">%d</span><span class="s2"> moved=0.000000 on_surface=False&quot;</span><span class="p">,</span>
+                    <span class="n">idx</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">new_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="c1"># Rebuild sphere mesh centered at the moved points</span>
+        <span class="n">verts</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_spheres</span><span class="p">(</span>
+            <span class="n">new_points</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_radius</span><span class="p">,</span> <span class="n">stacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stacks</span><span class="p">,</span> <span class="n">slices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slices</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;project_onto_frusta done moved_points=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_points</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">PointSet</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">verts</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">points</span><span class="o">=</span><span class="n">new_points</span><span class="p">,</span>
+            <span class="n">base_radius</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_radius</span><span class="p">,</span>
+            <span class="n">stacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stacks</span><span class="p">,</span>
+            <span class="n">slices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slices</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FrustaSet">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FrustaSet</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A batched frusta mesh derived from a `SWCModel`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vertices: List[Point3]</span>
+<span class="sd">        Concatenated vertices for all frusta.</span>
+<span class="sd">    faces: List[Face]</span>
+<span class="sd">        Triangular faces indexing into `vertices`.</span>
+<span class="sd">    sides: int</span>
+<span class="sd">        Circumferential resolution used per frustum.</span>
+<span class="sd">    end_caps: bool</span>
+<span class="sd">        Whether end caps were included during construction.</span>
+<span class="sd">    n_frusta: int</span>
+<span class="sd">        Number of frusta used (one per graph edge).</span>
+<span class="sd">    frusta: List[Frustum]</span>
+<span class="sd">        The frusta used to construct the mesh (stored as axis `Frustum`s).</span>
+<span class="sd">    edge_uvs: Optional[List[Tuple[int, int]]]</span>
+<span class="sd">        Optional labels preserving which (u, v) edge generated each frustum, in the same order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">vertices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Point3</span><span class="p">]</span>
+    <span class="n">faces</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Face</span><span class="p">]</span>
+    <span class="n">sides</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">end_caps</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">n_frusta</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">frusta</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Frustum</span><span class="p">]</span>
+    <span class="n">edge_uvs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="FrustaSet.from_swc_file">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.from_swc_file">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_swc_file</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">swc_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">sides</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">end_caps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">flip_tag_assignment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FrustaSet&quot;</span><span class="p">:</span>
+        <span class="n">swc_model</span> <span class="o">=</span> <span class="n">SWCModel</span><span class="o">.</span><span class="n">from_swc_file</span><span class="p">(</span><span class="n">swc_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_swc_model</span><span class="p">(</span>
+            <span class="n">swc_model</span><span class="p">,</span>
+            <span class="n">sides</span><span class="o">=</span><span class="n">sides</span><span class="p">,</span>
+            <span class="n">end_caps</span><span class="o">=</span><span class="n">end_caps</span><span class="p">,</span>
+            <span class="n">flip_tag_assignment</span><span class="o">=</span><span class="n">flip_tag_assignment</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.from_swc_model">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.from_swc_model">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_swc_model</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SWCModel</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">sides</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">end_caps</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">flip_tag_assignment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FrustaSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a `FrustaSet` by converting each undirected edge into a frustum axis `Frustum`.</span>
+
+<span class="sd">        Accepts any NetworkX graph (SWCModel or nx.Graph) with nodes that have</span>
+<span class="sd">        spatial coordinates and radii. Validates that all nodes have required</span>
+<span class="sd">        attributes: x, y, z, r.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model: SWCModel | nx.Graph</span>
+<span class="sd">            Graph with nodes containing x, y, z, r attributes. Can be SWCModel</span>
+<span class="sd">            or nx.Graph (e.g., from make_cycle_connections()).</span>
+<span class="sd">        sides: int</span>
+<span class="sd">            Number of sides per frustum.</span>
+<span class="sd">        end_caps: bool</span>
+<span class="sd">            Whether to include end caps.</span>
+<span class="sd">        flip_tag_assignment: bool</span>
+<span class="sd">            If True, assign tags from the child node to the parent node.</span>
+<span class="sd">            Otherwise, assign tags from the parent node to the child node.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If any node is missing required attributes (x, y, z, r).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="c1"># Validate that all nodes have required attributes</span>
+        <span class="n">required_attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="n">required_attrs</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Node </span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s2"> missing required attributes: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;FrustaSet requires all nodes to have x, y, z, r attributes.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">frusta</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Frustum</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">edge_uvs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Check if model has SWCModel helper methods</span>
+        <span class="n">has_helpers</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;get_node_xyz&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">has_helpers</span><span class="p">:</span>
+                <span class="n">xyz_u</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_node_xyz</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+                <span class="n">xyz_v</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_node_xyz</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">ru</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_node_radius</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_node_radius</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_node_tag</span><span class="p">(</span><span class="n">v</span> <span class="k">if</span> <span class="n">flip_tag_assignment</span> <span class="k">else</span> <span class="n">u</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Direct attribute access for nx.Graph</span>
+                <span class="n">node_u</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">]</span>
+                <span class="n">node_v</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                <span class="n">xyz_u</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">node_u</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">node_u</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">node_u</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]))</span>
+                <span class="n">xyz_v</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">node_v</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">node_v</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">node_v</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]))</span>
+                <span class="n">ru</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">node_u</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">])</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">node_v</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">])</span>
+                <span class="n">tag_node</span> <span class="o">=</span> <span class="n">node_v</span> <span class="k">if</span> <span class="n">flip_tag_assignment</span> <span class="k">else</span> <span class="n">node_u</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tag_node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+            <span class="n">frusta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Frustum</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">xyz_u</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">xyz_v</span><span class="p">,</span> <span class="n">ra</span><span class="o">=</span><span class="n">ru</span><span class="p">,</span> <span class="n">rb</span><span class="o">=</span><span class="n">rv</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">))</span>
+            <span class="n">edge_uvs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+
+        <span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_frusta</span><span class="p">(</span><span class="n">frusta</span><span class="p">,</span> <span class="n">sides</span><span class="o">=</span><span class="n">sides</span><span class="p">,</span> <span class="n">end_caps</span><span class="o">=</span><span class="n">end_caps</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;FrustaSet.from_swc_model edges=</span><span class="si">%d</span><span class="s2"> sides=</span><span class="si">%d</span><span class="s2"> end_caps=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">frusta</span><span class="p">),</span>
+            <span class="n">sides</span><span class="p">,</span>
+            <span class="n">end_caps</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">sides</span><span class="o">=</span><span class="n">sides</span><span class="p">,</span>
+            <span class="n">end_caps</span><span class="o">=</span><span class="n">end_caps</span><span class="p">,</span>
+            <span class="n">n_frusta</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">frusta</span><span class="p">),</span>
+            <span class="n">frusta</span><span class="o">=</span><span class="n">frusta</span><span class="p">,</span>
+            <span class="n">edge_uvs</span><span class="o">=</span><span class="n">edge_uvs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.to_mesh3d_arrays">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.to_mesh3d_arrays">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_mesh3d_arrays</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Plotly Mesh3d arrays: x, y, z, i, j, k.&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">]</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.scaled">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.scaled">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scaled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius_scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FrustaSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new FrustaSet with all frustum radii scaled by `radius_scale`.</span>
+
+<span class="sd">        This rebuilds vertices/faces from the stored `frusta` list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">radius_scale</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">scaled_frusta</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Frustum</span><span class="p">(</span>
+                <span class="n">a</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">ra</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">radius_scale</span><span class="p">,</span> <span class="n">rb</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">rb</span> <span class="o">*</span> <span class="n">radius_scale</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">tag</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frusta</span>
+        <span class="p">]</span>
+        <span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_frusta</span><span class="p">(</span>
+            <span class="n">scaled_frusta</span><span class="p">,</span> <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span> <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FrustaSet.scaled radius_scale=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">radius_scale</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FrustaSet</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span>
+            <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span><span class="p">,</span>
+            <span class="n">n_frusta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frusta</span><span class="p">,</span>
+            <span class="n">frusta</span><span class="o">=</span><span class="n">scaled_frusta</span><span class="p">,</span>
+            <span class="n">edge_uvs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span><span class="p">[:]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.scale">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.scale">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scalar</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FrustaSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `FrustaSet` with coordinates and radii scaled by `scalar`.&quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scalar</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;scalar must be a number&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scalar</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">scaled_frusta</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Frustum</span><span class="p">(</span>
+                <span class="n">a</span><span class="o">=</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">),</span>
+                <span class="n">b</span><span class="o">=</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">),</span>
+                <span class="n">ra</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span>
+                <span class="n">rb</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">rb</span> <span class="o">*</span> <span class="n">scalar</span><span class="p">,</span>
+                <span class="n">tag</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frusta</span>
+        <span class="p">]</span>
+        <span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_frusta</span><span class="p">(</span>
+            <span class="n">scaled_frusta</span><span class="p">,</span> <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span> <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FrustaSet.scale scalar=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">scalar</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FrustaSet</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span>
+            <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span><span class="p">,</span>
+            <span class="n">n_frusta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_frusta</span><span class="p">,</span>
+            <span class="n">frusta</span><span class="o">=</span><span class="n">scaled_frusta</span><span class="p">,</span>
+            <span class="n">edge_uvs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span><span class="p">[:]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.nearest_frustum_index">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.nearest_frustum_index">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nearest_frustum_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the index of the frustum whose axis is closest to `xyz`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_frusta</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;FrustaSet is empty&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;xyz must be a sequence of length 3&quot;</span><span class="p">)</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">point_frustum_distance2</span><span class="p">(</span><span class="n">p_</span><span class="p">:</span> <span class="n">Point3</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Point3</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Point3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+            <span class="n">ab</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+            <span class="n">ap</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">p_</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+            <span class="n">denom</span> <span class="o">=</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">ab</span><span class="p">,</span> <span class="n">ab</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">denom</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="c1"># Degenerate frustum: treat as distance to a</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">p_</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">ab</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">elif</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">b</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">q</span> <span class="o">=</span> <span class="n">v_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_mul</span><span class="p">(</span><span class="n">ab</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">v_sub</span><span class="p">(</span><span class="n">p_</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">v_dot</span><span class="p">(</span><span class="n">diff</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">best_d2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frusta</span><span class="p">):</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="n">point_frustum_distance2</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d2</span> <span class="o">&lt;</span> <span class="n">best_d2</span><span class="p">:</span>
+                <span class="n">best_d2</span> <span class="o">=</span> <span class="n">d2</span>
+                <span class="n">best_idx</span> <span class="o">=</span> <span class="n">idx</span>
+
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;FrustaSet.nearest_frustum_index xyz=(</span><span class="si">%.6f</span><span class="s2">,</span><span class="si">%.6f</span><span class="s2">,</span><span class="si">%.6f</span><span class="s2">) idx=</span><span class="si">%d</span><span class="s2"> d=</span><span class="si">%.6f</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="n">best_idx</span><span class="p">,</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">best_d2</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">best_idx</span></div>
+
+
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+    <span class="c1"># Frustum ordering utilities</span>
+    <span class="c1"># ----------------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="FrustaSet.frustum_order_map">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.frustum_order_map">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">frustum_order_map</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Point3</span><span class="p">,</span> <span class="n">Point3</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">idx</span><span class="p">:</span> <span class="n">uv</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">uv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">idx</span><span class="p">:</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frusta</span><span class="p">)}</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.reordered">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.reordered">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reordered</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">new_order</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">label_remap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FrustaSet&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new set with frusta reordered by index or (u, v) label mapping.&quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_frusta</span>
+        <span class="k">if</span> <span class="n">label_remap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;label_remap requires edge_uvs on this FrustaSet&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_remap</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;label_remap must assign every existing edge to a unique index&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># Build inverse permutation: new_index -&gt; old_index</span>
+            <span class="n">inv</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>
+            <span class="k">for</span> <span class="n">old_idx</span><span class="p">,</span> <span class="n">uv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">uv</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">label_remap</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;edge label </span><span class="si">{</span><span class="n">uv</span><span class="si">}</span><span class="s2"> missing from label_remap&quot;</span><span class="p">)</span>
+                <span class="n">new_idx</span> <span class="o">=</span> <span class="n">label_remap</span><span class="p">[</span><span class="n">uv</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">new_idx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">new_idx</span> <span class="o">&gt;=</span> <span class="n">n</span> <span class="ow">or</span> <span class="n">inv</span><span class="p">[</span><span class="n">new_idx</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;label_remap must be a bijection over 0..N-1&quot;</span><span class="p">)</span>
+                <span class="n">inv</span><span class="p">[</span><span class="n">new_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_idx</span>
+            <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inv</span><span class="p">)</span>
+            <span class="n">new_order</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inv</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Provide either new_order or label_remap&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_order</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">new_order</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;new_order must be a permutation of range(N)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Reorder frusta and optional labels, rebuild mesh</span>
+        <span class="n">frusta_new</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">frusta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">new_order</span><span class="p">]</span>
+        <span class="n">labels_new</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">new_order</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_uvs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span> <span class="o">=</span> <span class="n">batch_frusta</span><span class="p">(</span>
+            <span class="n">frusta_new</span><span class="p">,</span> <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span> <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FrustaSet.reordered n=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FrustaSet</span><span class="p">(</span>
+            <span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span>
+            <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
+            <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span>
+            <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span><span class="p">,</span>
+            <span class="n">n_frusta</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+            <span class="n">frusta</span><span class="o">=</span><span class="n">frusta_new</span><span class="p">,</span>
+            <span class="n">edge_uvs</span><span class="o">=</span><span class="n">labels_new</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.frustum_face_slices_map">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.frustum_face_slices_map">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">frustum_face_slices_map</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+        <span class="n">slices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">face_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frusta</span><span class="p">):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">frustum_mesh</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">sides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sides</span><span class="p">,</span> <span class="n">end_caps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">end_caps</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">slices</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">face_offset</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+            <span class="n">face_offset</span> <span class="o">+=</span> <span class="n">count</span>
+        <span class="k">if</span> <span class="n">face_offset</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">):</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;frustum_face_slices_map mismatch faces_computed=</span><span class="si">%d</span><span class="s2"> faces_total=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">face_offset</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">slices</span>
+        <span class="k">return</span> <span class="n">slices</span></div>
+
+
+<div class="viewcode-block" id="FrustaSet.frustum_axis_midpoints">
+<a class="viewcode-back" href="../../api.html#swctools.FrustaSet.frustum_axis_midpoints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">frustum_axis_midpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Point3</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">idx</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">midpoint</span><span class="p">()</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frusta</span><span class="p">)}</span></div>
+</div>
+
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Frustum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;frustum_mesh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;batch_frusta&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sphere_mesh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;batch_spheres&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PointSet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FrustaSet&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Jordan M. R. Fox.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -19,7 +19,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
-    "nbsphinx",
 ]
 
 templates_path = ["_templates"]
@@ -74,7 +73,25 @@ intersphinx_mapping = {
     "networkx": ("https://networkx.org/documentation/stable", None),
 }
 
-# -- nbsphinx ---------------------------------------------------------------
-nbsphinx_execute = "never"  # Set to "always" if you want notebooks executed on build
-nbsphinx_allow_errors = False
-nbsphinx_require_js = False
+
+# -- Custom build hook for notebook conversion --------------------------------
+def setup(app):
+    """Convert notebook to HTML before building."""
+    import subprocess
+    import sys
+
+    # Convert notebook to HTML
+    try:
+        script_path = os.path.join(os.path.dirname(__file__), "convert_notebook.py")
+        result = subprocess.run(
+            [sys.executable, script_path],
+            capture_output=True,
+            text=True,
+            cwd=os.path.dirname(__file__),
+        )
+        if result.returncode != 0:
+            print(f"Warning: Notebook conversion failed: {result.stderr}")
+        else:
+            print(result.stdout)
+    except Exception as e:
+        print(f"Warning: Could not convert notebook: {e}")
