@@ -61,4 +61,4 @@ def test_frustaset_validates_required_attributes():
     G2.add_edge(1, 2)
 
     fr = FrustaSet.from_swc_model(G2, sides=8, end_caps=False)
-    assert fr.frustum_count == 1
+    assert fr.n_frusta == 1

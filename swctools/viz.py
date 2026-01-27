@@ -210,7 +210,7 @@ def plot_frusta(
     apply_layout(fig, title=title or "Frusta Mesh")
     logger.info(
         "plot_frusta frusta=%d radius_scale=%s flatshading=%s",
-        frusta.frustum_count,
+        frusta.n_frusta,
         radius_scale,
         flatshading,
     )
@@ -299,7 +299,7 @@ def plot_frusta_with_centroid(
     logger.info(
         "plot_frusta_with_centroid edges=%d frusta=%d radius_scale=%s",
         len(list(swc_model.edges)),
-        frusta.frustum_count,
+        frusta.n_frusta,
         radius_scale,
     )
     return fig
@@ -483,7 +483,7 @@ def plot_frusta_slider(
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
     logger.info(
         "plot_frusta_slider frusta=%d scales=%d min=%s max=%s",
-        frusta.frustum_count,
+        frusta.n_frusta,
         len(scales),
         min_scale,
         max_scale,
@@ -748,7 +748,7 @@ def plot_model(
             fig.update_layout(sliders=sliders, updatemenus=updatemenus)
             logger.info(
                 "plot_model slider=True frusta=%d radius_scale_range=[%s,%s]",
-                base_fr.frustum_count,
+                base_fr.n_frusta,
                 min_scale,
                 max_scale,
             )
@@ -790,7 +790,7 @@ def plot_model(
     apply_layout(fig, title=title or "Model")
     logger.info(
         "plot_model slider=False frusta=%s show_frusta=%s show_centroid=%s",
-        base_fr.frustum_count if base_fr is not None else None,
+        base_fr.n_frusta if base_fr is not None else None,
         show_frusta,
         show_centroid,
     )
@@ -817,7 +817,7 @@ def animate_frusta_timeseries(
     frusta: FrustaSet
         Batched frusta mesh. Optionally scaled via `radius_scale` before rendering.
     values: Sequence[Sequence[float]]
-        Time series V_i(t) shaped [T][N], where N = `frusta.frustum_count`.
+        Time series V_i(t) shaped [T][N], where N = `frusta.n_frusta`.
         Each time step provides one scalar per frustum in the current order.
     colorscale: str | list
         Plotly colorscale for mapping intensities.
@@ -844,10 +844,10 @@ def animate_frusta_timeseries(
     if len(values) == 0:
         raise ValueError("values must have at least one time step")
     T = len(values)
-    N = fr.frustum_count
+    N = fr.n_frusta
     if any(len(vt) != N for vt in values):
         raise ValueError(
-            "each time step must have N values, matching frusta.frustum_count"
+            "each time step must have N values, matching frusta.n_frusta"
         )
 
     def faces_intensity(vt: Sequence[float]) -> list[float]:

@@ -549,7 +549,7 @@ class PointSet:
         logger.info(
             "project_onto_frusta points=%d frusta=%d use_caps=%s",
             len(self.points),
-            frusta.frustum_count,
+            frusta.n_frusta,
             use_caps,
         )
         # For each input point, search all frusta and keep the closest surface point
@@ -690,10 +690,8 @@ class FrustaSet:
         Circumferential resolution used per frustum.
     end_caps: bool
         Whether end caps were included during construction.
-    frustum_count: int
+    n_frusta: int
         Number of frusta used (one per graph edge).
-    edge_count: int
-        Alias for `frustum_count` for clarity.
     frusta: List[Frustum]
         The frusta used to construct the mesh (stored as axis `Frustum`s).
     edge_uvs: Optional[List[Tuple[int, int]]]
@@ -704,8 +702,7 @@ class FrustaSet:
     faces: List[Face]
     sides: int
     end_caps: bool
-    frustum_count: int
-    edge_count: int
+    n_frusta: int
     frusta: List[Frustum]
     edge_uvs: Optional[List[Tuple[int, int]]] = None
 
@@ -812,8 +809,7 @@ class FrustaSet:
             faces=faces,
             sides=sides,
             end_caps=end_caps,
-            frustum_count=len(frusta),
-            edge_count=len(frusta),
+            n_frusta=len(frusta),
             frusta=frusta,
             edge_uvs=edge_uvs,
         )
@@ -853,8 +849,7 @@ class FrustaSet:
             faces=faces,
             sides=self.sides,
             end_caps=self.end_caps,
-            frustum_count=self.frustum_count,
-            edge_count=self.edge_count,
+            n_frusta=self.n_frusta,
             frusta=scaled_frusta,
             edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
         )
@@ -885,15 +880,14 @@ class FrustaSet:
             faces=faces,
             sides=self.sides,
             end_caps=self.end_caps,
-            frustum_count=self.frustum_count,
-            edge_count=self.edge_count,
+            n_frusta=self.n_frusta,
             frusta=scaled_frusta,
             edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
         )
 
     def nearest_frustum_index(self, xyz: Sequence[float]) -> int:
         """Return the index of the frustum whose axis is closest to `xyz`."""
-        if self.frustum_count == 0:
+        if self.n_frusta == 0:
             raise ValueError("FrustaSet is empty")
         if len(xyz) != 3:
             raise ValueError("xyz must be a sequence of length 3")
@@ -952,7 +946,7 @@ class FrustaSet:
         label_remap: Optional[Mapping[Tuple[int, int], int]] = None,
     ) -> "FrustaSet":
         """Return a new set with frusta reordered by index or (u, v) label mapping."""
-        n = self.frustum_count
+        n = self.n_frusta
         if label_remap is not None:
             if self.edge_uvs is None:
                 raise ValueError("label_remap requires edge_uvs on this FrustaSet")
@@ -993,8 +987,7 @@ class FrustaSet:
             faces=faces,
             sides=self.sides,
             end_caps=self.end_caps,
-            frustum_count=n,
-            edge_count=n,
+            n_frusta=n,
             frusta=frusta_new,
             edge_uvs=labels_new,
         )
