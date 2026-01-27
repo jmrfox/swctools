@@ -1,0 +1,51 @@
+swctools
+========
+
+Jupyter-first toolbox for SWC parsing, modeling, analysis, geometry, and 3D visualization (NetworkX, NumPy, Plotly).
+
+- Parse SWC into directed ``SWCModel``
+- Visualize skeletons (centroid) with ``plot_model``
+- Build volumetric frusta meshes with ``FrustaSet``, or use the master ``plot_model``
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   installation
+   visualization
+   api
+   demo
+
+Quick start
+-----------
+
+.. code-block:: python
+
+   from swctools import parse_swc, SWCModel, FrustaSet, PointSet, plot_model, set_config
+
+   # Optional: global viz settings (equal axes enforced by default)
+   set_config(width=800, height=600)
+
+   swc = """
+   # CYCLE_BREAK reconnect 2 3
+   1 1 0 0 0 1 -1
+   2 3 2 0 0 0.5 1
+   3 3 2 0 0 0.5 1
+   4 3 3 0 0 0.4 2
+   """.strip()
+
+   swc_model = SWCModel.from_swc_file(swc, strict=True, validate_reconnections=True)
+   fr = FrustaSet.from_swc_model(swc_model, sides=16, end_caps=False)
+
+   # Optional overlay points (as small spheres)
+   ps = PointSet.from_points([(0,0,0), (3,0,0)], base_radius=0.05)
+
+   # One-call visualization
+   fig = plot_model(swc_model=swc_model, frusta=fr, show_centroid=True, point_set=ps, radius_scale=0.8)
+   fig.show()
+
+   # Interactive radius slider (0..1)
+   fig_slider = plot_model(swc_model=swc_model, frusta=fr, slider=True, min_scale=0.0, max_scale=1.0, steps=21)
+   fig_slider.show()
+
+See the :doc:`visualization` and :doc:`api` pages for details.

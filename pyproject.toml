@@ -51,10 +51,11 @@ build-backend = "hatchling.build"
 dev = [
     "nbformat>=5.10.4",
     "pytest>=8.4.2",
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.5.49",
-    "mkdocstrings[python]>=0.27.0",
     "ipykernel>=6.29.0",
+    "sphinx>=8.1.3",
+    "pydata-sphinx-theme>=0.16.1",
+    "sphinx-autodoc-typehints>=3.2.1",
+    "nbsphinx>=0.9.8",
 ]
 
 [tool.hatch.build]
