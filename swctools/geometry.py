@@ -1,6 +1,6 @@
-"""Geometry utilities for segment/frustum mesh generation.
+"""Geometry utilities for frustum mesh generation.
 
-- Segment: oriented frustum defined by two points with radii
+- Frustum: oriented frustum defined by two points with radii
 - frustum_mesh: build vertices/faces for a single frustum
 - batch_frusta: combine multiple frusta into one mesh
 
@@ -18,6 +18,8 @@ import io
 import math
 import numpy as np
 import logging
+
+from .model import SWCModel
 
 # Types
 Point3 = Tuple[float, float, float]
@@ -71,8 +73,8 @@ def v_unit(a: Vec3, eps: float = 1e-12) -> Vec3:
 
 
 @dataclass(frozen=True)
-class Segment:
-    """Oriented frustum segment between endpoints `a` and `b`.
+class Frustum:
+    """Oriented frustum between endpoints `a` and `b`.
 
     Attributes
     ----------
@@ -81,7 +83,7 @@ class Segment:
     ra, rb: float
         Radii at `a` and `b`.
     tag: int
-        Optional tag for the segment.
+        Optional tag for the frustum.
     """
 
     a: Point3
@@ -98,18 +100,18 @@ class Segment:
 
     def midpoint(self) -> Point3:
         return (
-            self.a[0] * 0.5 + self.b[0] * 0.5,
-            self.a[1] * 0.5 + self.b[1] * 0.5,
-            self.a[2] * 0.5 + self.b[2] * 0.5,
+            (self.a[0] + self.b[0]) * 0.5,
+            (self.a[1] + self.b[1]) * 0.5,
+            (self.a[2] + self.b[2]) * 0.5,
         )
 
-    def scale(self, scalar: float) -> "Segment":
-        """Return a new `Segment` uniformly scaled by `scalar` (positions and radii)."""
+    def scale(self, scalar: float) -> "Frustum":
+        """Return a new `Frustum` uniformly scaled by `scalar` (positions and radii)."""
         if not isinstance(scalar, (int, float)):
             raise TypeError("scalar must be a number")
         ax, ay, az = self.a
         bx, by, bz = self.b
-        return Segment(
+        return Frustum(
             a=(ax * scalar, ay * scalar, az * scalar),
             b=(bx * scalar, by * scalar, bz * scalar),
             ra=self.ra * scalar,
@@ -165,9 +167,9 @@ def _circle_ring(
 
 
 def frustum_mesh(
-    seg: Segment, *, sides: int = 16, end_caps: bool = False
+    seg: Frustum, *, sides: int = 16, end_caps: bool = False
 ) -> Tuple[List[Point3], List[Face]]:
-    """Generate a frustum mesh for a single `Segment`.
+    """Generate a frustum mesh for a single `Frustum`.
 
     Returns
     -------
@@ -226,7 +228,7 @@ def frustum_mesh(
 
 
 def batch_frusta(
-    segments: Iterable[Segment], *, sides: int = 16, end_caps: bool = False
+    frusta: Iterable[Frustum], *, sides: int = 16, end_caps: bool = False
 ) -> Tuple[List[Point3], List[Face]]:
     """Batch multiple frusta into a single mesh.
 
@@ -236,7 +238,7 @@ def batch_frusta(
     all_faces: List[Face] = []
     offset = 0
 
-    for seg in segments:
+    for seg in frusta:
         v, f = frustum_mesh(seg, sides=sides, end_caps=end_caps)
         all_vertices.extend(v)
         # Re-index faces
@@ -246,7 +248,7 @@ def batch_frusta(
     logger = logging.getLogger(__name__)
     logger.info(
         "batch_frusta count=%d sides=%d end_caps=%s verts=%d faces=%d",
-        len(list(segments)) if isinstance(segments, list) else -1,
+        len(list(frusta)) if isinstance(frusta, list) else -1,
         sides,
         end_caps,
         len(all_vertices),
@@ -514,7 +516,7 @@ class PointSet:
         Parameters
         ----------
         frusta: FrustaSet
-            Set of oriented frusta (as `Segment`s) to project onto.
+            Set of oriented frusta (as `Frustum`s) to project onto.
         include_end_caps: Optional[bool]
             If None (default), follow `frusta.end_caps`. If True/False, explicitly
             include or ignore projections to the circular end caps.
@@ -527,16 +529,16 @@ class PointSet:
 
         Notes
         -----
-        For each input point, the algorithm iterates all frusta segments and
+        For each input point, the algorithm iterates all frusta and
         evaluates the squared distance to:
-        - The lateral surface: project the point to the segment axis (clamped
+        - The lateral surface: project the point to the frustum axis (clamped
           t in [0,1]), interpolate radius r(t), then move along the radial
           direction to the mantle.
         - The end caps (optional): orthogonal distance to each cap plane; if
           the projected point falls outside the disk, distance to the rim is used.
-        Degenerate segments (zero length) are treated as a sphere of radius
+        Degenerate frusta (zero length) are treated as a sphere of radius
         max(ra, rb) centered at the endpoint.
-        Complexity is O(N_points × N_segments), implemented in pure Python.
+        Complexity is O(N_points × N_frusta), implemented in pure Python.
         """
         # Resolve whether to include end-cap projections (explicit flag overrides frusta setting)
         logger = logging.getLogger(__name__)
@@ -545,24 +547,24 @@ class PointSet:
         # Accumulate the new, projected points in order
         new_points: List[Point3] = []
         logger.info(
-            "project_onto_frusta points=%d segments=%d use_caps=%s",
+            "project_onto_frusta points=%d frusta=%d use_caps=%s",
             len(self.points),
-            frusta.segment_count,
+            frusta.frustum_count,
             use_caps,
         )
         # For each input point, search all frusta and keep the closest surface point
         for idx, p in enumerate(self.points):
             best_q: Optional[Point3] = None
             best_d2 = float("inf")
-            # Check every frustum segment
-            for s in frusta.segments:
+            # Check every frustum
+            for s in frusta.frusta:
                 a = s.a
                 b = s.b
                 ra = s.ra
                 rb = s.rb
                 d = v_sub(b, a)
                 l2 = v_dot(d, d)
-                # Degenerate segment: treat as a sphere of radius max(ra, rb) at endpoint a
+                # Degenerate frustum: treat as a sphere of radius max(ra, rb) at endpoint a
                 if l2 < eps:
                     R = max(ra, rb)
                     ap = v_sub(p, a)
@@ -579,7 +581,7 @@ class PointSet:
                         best_d2 = d2
                         best_q = q
                     continue
-                # Project point onto segment axis and clamp to [0, 1]
+                # Project point onto frustum axis and clamp to [0, 1]
                 t = v_dot(v_sub(p, a), d) / l2
                 if t < 0.0:
                     t_clamped = 0.0
@@ -587,7 +589,7 @@ class PointSet:
                     t_clamped = 1.0
                 else:
                     t_clamped = t
-                # Local orthonormal frame with axis W along the segment direction
+                # Local orthonormal frame with axis W along the frustum axis direction
                 U, V, W = _orthonormal_frame(d)
                 c = v_add(a, v_mul(d, t_clamped))
                 nvec = v_sub(p, c)
@@ -688,24 +690,42 @@ class FrustaSet:
         Circumferential resolution used per frustum.
     end_caps: bool
         Whether end caps were included during construction.
-    segment_count: int
-        Number of segments used (one per graph edge).
+    frustum_count: int
+        Number of frusta used (one per graph edge).
     edge_count: int
-        Alias for `segment_count` for clarity.
-    segments: List[Segment]
-        The segments used to construct the frusta.
+        Alias for `frustum_count` for clarity.
+    frusta: List[Frustum]
+        The frusta used to construct the mesh (stored as axis `Frustum`s).
     edge_uvs: Optional[List[Tuple[int, int]]]
-        Optional labels preserving which (u, v) edge generated each segment, in the same order.
+        Optional labels preserving which (u, v) edge generated each frustum, in the same order.
     """
 
     vertices: List[Point3]
     faces: List[Face]
     sides: int
     end_caps: bool
-    segment_count: int
+    frustum_count: int
     edge_count: int
-    segments: List[Segment]
+    frusta: List[Frustum]
     edge_uvs: Optional[List[Tuple[int, int]]] = None
+
+    @classmethod
+    def from_swc_file(
+        cls,
+        swc_file: str | os.PathLike[str],
+        *,
+        sides: int = 16,
+        end_caps: bool = False,
+        flip_tag_assignment: bool = False,
+        **kwargs: Any,
+    ) -> "FrustaSet":
+        swc_model = SWCModel.from_swc_file(swc_file, **kwargs)
+        return cls.from_swc_model(
+            swc_model,
+            sides=sides,
+            end_caps=end_caps,
+            flip_tag_assignment=flip_tag_assignment,
+        )
 
     @classmethod
     def from_swc_model(
@@ -716,7 +736,7 @@ class FrustaSet:
         end_caps: bool = False,
         flip_tag_assignment: bool = False,
     ) -> "FrustaSet":
-        """Build a `FrustaSet` by converting each undirected edge into a `Segment`.
+        """Build a `FrustaSet` by converting each undirected edge into a frustum axis `Frustum`.
 
         Accepts any NetworkX graph (SWCModel or nx.Graph) with nodes that have
         spatial coordinates and radii. Validates that all nodes have required
@@ -753,7 +773,7 @@ class FrustaSet:
                     f"FrustaSet requires all nodes to have x, y, z, r attributes."
                 )
 
-        segments: List[Segment] = []
+        frusta: List[Frustum] = []
         edge_uvs: List[Tuple[int, int]] = []
 
         # Check if model has SWCModel helper methods
@@ -777,13 +797,13 @@ class FrustaSet:
                 tag_node = node_v if flip_tag_assignment else node_u
                 tag = int(tag_node.get("t", 0))
 
-            segments.append(Segment(a=xyz_u, b=xyz_v, ra=ru, rb=rv, tag=tag))
+            frusta.append(Frustum(a=xyz_u, b=xyz_v, ra=ru, rb=rv, tag=tag))
             edge_uvs.append((int(u), int(v)))
 
-        vertices, faces = batch_frusta(segments, sides=sides, end_caps=end_caps)
+        vertices, faces = batch_frusta(frusta, sides=sides, end_caps=end_caps)
         logger.info(
             "FrustaSet.from_swc_model edges=%d sides=%d end_caps=%s",
-            len(segments),
+            len(frusta),
             sides,
             end_caps,
         )
@@ -792,9 +812,9 @@ class FrustaSet:
             faces=faces,
             sides=sides,
             end_caps=end_caps,
-            segment_count=len(segments),
-            edge_count=len(segments),
-            segments=segments,
+            frustum_count=len(frusta),
+            edge_count=len(frusta),
+            frusta=frusta,
             edge_uvs=edge_uvs,
         )
 
@@ -811,21 +831,21 @@ class FrustaSet:
         return x, y, z, i, j, k
 
     def scaled(self, radius_scale: float) -> "FrustaSet":
-        """Return a new FrustaSet with all segment radii scaled by `radius_scale`.
+        """Return a new FrustaSet with all frustum radii scaled by `radius_scale`.
 
-        This rebuilds vertices/faces from the stored `segments` list.
+        This rebuilds vertices/faces from the stored `frusta` list.
         """
         if radius_scale == 1.0:
             return self
         logger = logging.getLogger(__name__)
-        scaled_segments = [
-            Segment(
+        scaled_frusta = [
+            Frustum(
                 a=s.a, b=s.b, ra=s.ra * radius_scale, rb=s.rb * radius_scale, tag=s.tag
             )
-            for s in self.segments
+            for s in self.frusta
         ]
         vertices, faces = batch_frusta(
-            scaled_segments, sides=self.sides, end_caps=self.end_caps
+            scaled_frusta, sides=self.sides, end_caps=self.end_caps
         )
         logger.info("FrustaSet.scaled radius_scale=%s", radius_scale)
         return FrustaSet(
@@ -833,9 +853,9 @@ class FrustaSet:
             faces=faces,
             sides=self.sides,
             end_caps=self.end_caps,
-            segment_count=self.segment_count,
+            frustum_count=self.frustum_count,
             edge_count=self.edge_count,
-            segments=scaled_segments,
+            frusta=scaled_frusta,
             edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
         )
 
@@ -846,18 +866,18 @@ class FrustaSet:
             raise TypeError("scalar must be a number")
         if scalar == 1.0:
             return self
-        scaled_segments = [
-            Segment(
+        scaled_frusta = [
+            Frustum(
                 a=(s.a[0] * scalar, s.a[1] * scalar, s.a[2] * scalar),
                 b=(s.b[0] * scalar, s.b[1] * scalar, s.b[2] * scalar),
                 ra=s.ra * scalar,
                 rb=s.rb * scalar,
                 tag=s.tag,
             )
-            for s in self.segments
+            for s in self.frusta
         ]
         vertices, faces = batch_frusta(
-            scaled_segments, sides=self.sides, end_caps=self.end_caps
+            scaled_frusta, sides=self.sides, end_caps=self.end_caps
         )
         logger.info("FrustaSet.scale scalar=%s", scalar)
         return FrustaSet(
@@ -865,27 +885,27 @@ class FrustaSet:
             faces=faces,
             sides=self.sides,
             end_caps=self.end_caps,
-            segment_count=self.segment_count,
+            frustum_count=self.frustum_count,
             edge_count=self.edge_count,
-            segments=scaled_segments,
+            frusta=scaled_frusta,
             edge_uvs=self.edge_uvs[:] if self.edge_uvs is not None else None,
         )
 
     def nearest_frustum_index(self, xyz: Sequence[float]) -> int:
-        """Return the index of the frustum whose axis segment is closest to `xyz`."""
-        if self.segment_count == 0:
+        """Return the index of the frustum whose axis is closest to `xyz`."""
+        if self.frustum_count == 0:
             raise ValueError("FrustaSet is empty")
         if len(xyz) != 3:
             raise ValueError("xyz must be a sequence of length 3")
 
         p = (float(xyz[0]), float(xyz[1]), float(xyz[2]))
 
-        def point_segment_distance2(p_: Point3, a: Point3, b: Point3) -> float:
+        def point_frustum_distance2(p_: Point3, a: Point3, b: Point3) -> float:
             ab = v_sub(b, a)
             ap = v_sub(p_, a)
             denom = v_dot(ab, ab)
             if denom <= 0.0:
-                # Degenerate segment: treat as distance to a
+                # Degenerate frustum: treat as distance to a
                 d = v_sub(p_, a)
                 return v_dot(d, d)
             t = v_dot(ap, ab) / denom
@@ -900,8 +920,8 @@ class FrustaSet:
 
         best_idx = 0
         best_d2 = float("inf")
-        for idx, s in enumerate(self.segments):
-            d2 = point_segment_distance2(p, s.a, s.b)
+        for idx, s in enumerate(self.frusta):
+            d2 = point_frustum_distance2(p, s.a, s.b)
             if d2 < best_d2:
                 best_d2 = d2
                 best_idx = idx
@@ -918,18 +938,12 @@ class FrustaSet:
         return best_idx
 
     # ----------------------------------------------------------------------------------
-    # Segment ordering utilities
+    # Frustum ordering utilities
     # ----------------------------------------------------------------------------------
-    def print_segment_order(self) -> None:
-        """Print the current segment ordering; uses `(u, v)` labels if available."""
+    def frustum_order_map(self) -> dict[int, tuple[int, int] | tuple[Point3, Point3]]:
         if self.edge_uvs is not None:
-            for idx, uv in enumerate(self.edge_uvs):
-                print(f"{idx}: {uv}")
-        else:
-            for idx, s in enumerate(self.segments):
-                a = f"({s.a[0]:.3f},{s.a[1]:.3f},{s.a[2]:.3f})"
-                b = f"({s.b[0]:.3f},{s.b[1]:.3f},{s.b[2]:.3f})"
-                print(f"{idx}: a={a} -> b={b}")
+            return {idx: uv for idx, uv in enumerate(self.edge_uvs)}
+        return {idx: (s.a, s.b) for idx, s in enumerate(self.frusta)}
 
     def reordered(
         self,
@@ -937,8 +951,8 @@ class FrustaSet:
         *,
         label_remap: Optional[Mapping[Tuple[int, int], int]] = None,
     ) -> "FrustaSet":
-        """Return a new set with segments reordered by index or (u, v) label mapping."""
-        n = self.segment_count
+        """Return a new set with frusta reordered by index or (u, v) label mapping."""
+        n = self.frustum_count
         if label_remap is not None:
             if self.edge_uvs is None:
                 raise ValueError("label_remap requires edge_uvs on this FrustaSet")
@@ -965,13 +979,13 @@ class FrustaSet:
         if len(new_order) != n or sorted(new_order) != list(range(n)):
             raise ValueError("new_order must be a permutation of range(N)")
 
-        # Reorder segments and optional labels, rebuild mesh
-        segs_new = [self.segments[i] for i in new_order]
+        # Reorder frusta and optional labels, rebuild mesh
+        frusta_new = [self.frusta[i] for i in new_order]
         labels_new = (
             [self.edge_uvs[i] for i in new_order] if self.edge_uvs is not None else None
         )
         vertices, faces = batch_frusta(
-            segs_new, sides=self.sides, end_caps=self.end_caps
+            frusta_new, sides=self.sides, end_caps=self.end_caps
         )
         logger.info("FrustaSet.reordered n=%d", n)
         return FrustaSet(
@@ -979,34 +993,36 @@ class FrustaSet:
             faces=faces,
             sides=self.sides,
             end_caps=self.end_caps,
-            segment_count=n,
+            frustum_count=n,
             edge_count=n,
-            segments=segs_new,
+            frusta=frusta_new,
             edge_uvs=labels_new,
         )
 
-    def per_segment_face_slices(self) -> List[Tuple[int, int]]:
-        """Return (start, count) face spans for each segment in current mesh order."""
-        slices: List[Tuple[int, int]] = []
+    def frustum_face_slices_map(self) -> dict[int, tuple[int, int]]:
+        slices: dict[int, tuple[int, int]] = {}
         face_offset = 0
-        for s in self.segments:
+        for idx, s in enumerate(self.frusta):
             _, f = frustum_mesh(s, sides=self.sides, end_caps=self.end_caps)
             count = len(f)
-            slices.append((face_offset, count))
+            slices[idx] = (face_offset, count)
             face_offset += count
         if face_offset != len(self.faces):
             logger = logging.getLogger(__name__)
             logger.debug(
-                "per_segment_face_slices mismatch faces_computed=%d faces_total=%d",
+                "frustum_face_slices_map mismatch faces_computed=%d faces_total=%d",
                 face_offset,
                 len(self.faces),
             )
             return slices
         return slices
 
+    def frustum_axis_midpoints(self) -> dict[int, Point3]:
+        return {idx: s.midpoint() for idx, s in enumerate(self.frusta)}
+
 
 __all__ = [
-    "Segment",
+    "Frustum",
     "frustum_mesh",
     "batch_frusta",
     "sphere_mesh",

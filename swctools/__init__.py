@@ -7,14 +7,14 @@ import logging
 
 from .io import SWCRecord, SWCParseResult, parse_swc
 from .model import SWCModel
-from .geometry import Segment, frustum_mesh, batch_frusta, FrustaSet, PointSet
+from .geometry import Frustum, frustum_mesh, batch_frusta, FrustaSet, PointSet
 from .viz import (
     plot_centroid,
     plot_frusta,
     plot_frusta_with_centroid,
     plot_frusta_slider,
     plot_model,
-    plot_frusta_timeseries,
+    animate_frusta_timeseries,
     plot_points,
 )
 from .config import get_config, set_config, apply_layout
@@ -26,7 +26,7 @@ __all__ = [
     "SWCParseResult",
     "parse_swc",
     "SWCModel",
-    "Segment",
+    "Frustum",
     "frustum_mesh",
     "batch_frusta",
     "PointSet",
@@ -35,7 +35,7 @@ __all__ = [
     "plot_frusta",
     "plot_frusta_with_centroid",
     "plot_frusta_slider",
-    "plot_frusta_timeseries",
+    "animate_frusta_timeseries",
     "plot_model",
     "plot_points",
     "get_config",

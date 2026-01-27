@@ -1,11 +1,11 @@
 import pytest
 import networkx as nx
-from swctools import Segment, frustum_mesh, batch_frusta, FrustaSet, SWCModel
+from swctools import Frustum, frustum_mesh, batch_frusta, FrustaSet, SWCModel
 
 
 def test_single_frustum_mesh_counts():
-    """Ensure `frustum_mesh` yields expected vertex/triangle counts for one segment without end caps."""
-    seg = Segment(a=(0, 0, 0), b=(1, 0, 0), ra=0.5, rb=0.25)
+    """Ensure `frustum_mesh` yields expected vertex/triangle counts for one frustum without end caps."""
+    seg = Frustum(a=(0, 0, 0), b=(1, 0, 0), ra=0.5, rb=0.25)
     v, f = frustum_mesh(seg, sides=12, end_caps=False)
     # 2 * sides vertices; 2 * sides faces for side quads
     assert len(v) == 24
@@ -13,14 +13,14 @@ def test_single_frustum_mesh_counts():
 
 
 def test_batch_frusta_reindexing():
-    """Verify `batch_frusta` concatenates meshes across segments and correctly reindexes face indices."""
+    """Verify `batch_frusta` concatenates meshes across frusta and correctly reindexes face indices."""
     segs = [
-        Segment(a=(0, 0, 0), b=(1, 0, 0), ra=0.5, rb=0.25),
-        Segment(a=(1, 0, 0), b=(2, 0, 0), ra=0.25, rb=0.2),
+        Frustum(a=(0, 0, 0), b=(1, 0, 0), ra=0.5, rb=0.25),
+        Frustum(a=(1, 0, 0), b=(2, 0, 0), ra=0.25, rb=0.2),
     ]
     v, f = batch_frusta(segs, sides=10, end_caps=False)
-    assert len(v) == 40  # 2 segments * (2 * sides)
-    assert len(f) == 40  # 2 segments * (2 * sides) -> 40 triangles
+    assert len(v) == 40  # 2 frusta * (2 * sides)
+    assert len(f) == 40  # 2 frusta * (2 * sides) -> 40 triangles
     # Ensure face indices are in range
     assert max(max(face) for face in f) < len(v)
 
@@ -61,4 +61,4 @@ def test_frustaset_validates_required_attributes():
     G2.add_edge(1, 2)
 
     fr = FrustaSet.from_swc_model(G2, sides=8, end_caps=False)
-    assert fr.segment_count == 1
+    assert fr.frustum_count == 1

@@ -14,7 +14,7 @@ Notes
 - Header reconnection annotations follow lines like:
   "# CYCLE_BREAK reconnect i j"
   Parsing is case-insensitive for the tokens "CYCLE_BREAK" and "reconnect".
-- Geometry/graph construction are handled elsewhere (e.g., SWCModel / GeneralModel).
+- Geometry/graph construction are handled elsewhere (e.g., SWCModel).
 
 Example
 -------

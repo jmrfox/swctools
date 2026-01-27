@@ -41,7 +41,7 @@ python -m ipykernel install --user --name swctools --display-name "Python (swcto
 Then in a notebook:
 
 ```python
-from swctools import parse_swc, GeneralModel, FrustaSet, plot_centroid, plot_frusta
+from swctools import SWCModel, FrustaSet, plot_model
 ```
 
 ## Uninstall

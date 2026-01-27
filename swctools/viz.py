@@ -75,12 +75,12 @@ def _build_node_scatter(
 def _build_tag_facecolors(
     frusta: FrustaSet, tag_colors: dict[int, str], default_color: str = "lightblue"
 ) -> list[str]:
-    """Build per-face color list based on segment tags.
+    """Build per-face color list based on frustum tags.
 
     Parameters
     ----------
     frusta: FrustaSet
-        Frusta set with segments.
+        Frusta set with frusta.
     tag_colors: dict[int, str]
         Mapping of tag values to color strings.
     default_color: str
@@ -91,10 +91,10 @@ def _build_tag_facecolors(
     list[str]
         Color string for each face in the frusta mesh.
     """
-    slices = frusta.per_segment_face_slices()
+    slices = list(frusta.frustum_face_slices_map().values())
     facecolors = []
-    for (start, count), seg in zip(slices, frusta.segments):
-        color = tag_colors.get(seg.tag, default_color)
+    for (start, count), frustum in zip(slices, frusta.frusta):
+        color = tag_colors.get(frustum.tag, default_color)
         facecolors.extend([color] * count)
     return facecolors
 
@@ -173,9 +173,9 @@ def plot_frusta(
     flatshading: bool
         Whether to enable flat shading.
     radius_scale: float
-        Uniform scale applied to all segment radii before meshing (1.0 = no change).
+        Uniform scale applied to all frustum radii before meshing (1.0 = no change).
     tag_colors: dict[int, str] | None
-        Optional mapping {tag: color}. If provided, each frustum segment is colored
+        Optional mapping {tag: color}. If provided, each frustum is colored
         uniformly according to its tag (fallback to `color` if a tag is missing).
     """
     logger = logging.getLogger(__name__)
@@ -209,8 +209,8 @@ def plot_frusta(
     fig = go.Figure(data=[mesh])
     apply_layout(fig, title=title or "Frusta Mesh")
     logger.info(
-        "plot_frusta segments=%d radius_scale=%s flatshading=%s",
-        frusta.segment_count,
+        "plot_frusta frusta=%d radius_scale=%s flatshading=%s",
+        frusta.frustum_count,
         radius_scale,
         flatshading,
     )
@@ -297,9 +297,9 @@ def plot_frusta_with_centroid(
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Centroid + Frusta")
     logger.info(
-        "plot_frusta_with_centroid edges=%d segments=%d radius_scale=%s",
+        "plot_frusta_with_centroid edges=%d frusta=%d radius_scale=%s",
         len(list(swc_model.edges)),
-        frusta.segment_count,
+        frusta.frustum_count,
         radius_scale,
     )
     return fig
@@ -341,10 +341,10 @@ def plot_frusta_slider(
     x0, y0, z0, _, _, _ = init_fr.to_mesh3d_arrays()
 
     if tag_colors is not None:
-        slices = base.per_segment_face_slices()
+        slices = list(base.frustum_face_slices_map().values())
         facecolor0: list[str] = []
-        for (start, count), seg in zip(slices, base.segments):
-            c = tag_colors.get(seg.tag, color)
+        for (start, count), frustum in zip(slices, base.frusta):
+            c = tag_colors.get(frustum.tag, color)
             facecolor0.extend([c] * count)
         mesh = go.Mesh3d(
             x=x0,
@@ -482,8 +482,8 @@ def plot_frusta_slider(
     apply_layout(fig, title=title or "Frusta Mesh — radius_scale slider")
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
     logger.info(
-        "plot_frusta_slider segments=%d scales=%d min=%s max=%s",
-        frusta.segment_count,
+        "plot_frusta_slider frusta=%d scales=%d min=%s max=%s",
+        frusta.frustum_count,
         len(scales),
         min_scale,
         max_scale,
@@ -747,8 +747,8 @@ def plot_model(
             apply_layout(fig, title=title or "Model")
             fig.update_layout(sliders=sliders, updatemenus=updatemenus)
             logger.info(
-                "plot_model slider=True segments=%d radius_scale_range=[%s,%s]",
-                base_fr.segment_count,
+                "plot_model slider=True frusta=%d radius_scale_range=[%s,%s]",
+                base_fr.frustum_count,
                 min_scale,
                 max_scale,
             )
@@ -789,15 +789,15 @@ def plot_model(
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Model")
     logger.info(
-        "plot_model slider=False segments=%s show_frusta=%s show_centroid=%s",
-        base_fr.segment_count if base_fr is not None else None,
+        "plot_model slider=False frusta=%s show_frusta=%s show_centroid=%s",
+        base_fr.frustum_count if base_fr is not None else None,
         show_frusta,
         show_centroid,
     )
     return fig
 
 
-def plot_frusta_timeseries(
+def animate_frusta_timeseries(
     frusta: FrustaSet,
     values: Sequence[Sequence[float]],
     *,
@@ -810,15 +810,15 @@ def plot_frusta_timeseries(
     fps: int = 10,
     title: str | None = None,
 ) -> go.Figure:
-    """Animate per-segment values over time by coloring frusta faces.
+    """Animate per-frustum values over time by coloring frusta faces.
 
     Parameters
     ----------
     frusta: FrustaSet
         Batched frusta mesh. Optionally scaled via `radius_scale` before rendering.
     values: Sequence[Sequence[float]]
-        Time series V_i(t) shaped [T][N], where N = `frusta.segment_count`.
-        Each time step provides one scalar per segment in the current order.
+        Time series V_i(t) shaped [T][N], where N = `frusta.frustum_count`.
+        Each time step provides one scalar per frustum in the current order.
     colorscale: str | list
         Plotly colorscale for mapping intensities.
     cmin, cmax: float | None
@@ -837,16 +837,17 @@ def plot_frusta_timeseries(
     plotly.graph_objects.Figure
         A figure with a Mesh3d trace and animation frames, plus a slider and play/pause controls.
     """
+    logger = logging.getLogger(__name__)
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
-    slices = fr.per_segment_face_slices()
+    slices = list(fr.frustum_face_slices_map().values())
     if len(values) == 0:
         raise ValueError("values must have at least one time step")
     T = len(values)
-    N = fr.segment_count
+    N = fr.frustum_count
     if any(len(vt) != N for vt in values):
         raise ValueError(
-            "each time step must have N values, matching frusta.segment_count"
+            "each time step must have N values, matching frusta.frustum_count"
         )
 
     def faces_intensity(vt: Sequence[float]) -> list[float]:
@@ -969,7 +970,7 @@ def plot_frusta_timeseries(
     apply_layout(fig, title=title or "Frusta timeseries")
     fig.update_layout(sliders=sliders, updatemenus=updatemenus)
     logger.info(
-        "plot_frusta_timeseries T=%d N=%d colorscale=%s fps=%d",
+        "animate_frusta_timeseries T=%d N=%d colorscale=%s fps=%d",
         T,
         N,
         colorscale,

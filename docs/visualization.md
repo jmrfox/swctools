@@ -26,7 +26,7 @@ fig.show()
 
 ```python
 from swctools import plot_frusta, FrustaSet
-fr = FrustaSet.from_general_model(gm, sides=16, end_caps=False)
+fr = FrustaSet.from_swc_model(gm, sides=16, end_caps=False)
 fig = plot_frusta(fr, radius_scale=0.8)
 fig.show()
 ```

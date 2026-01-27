@@ -16,7 +16,7 @@ Demo notebooks can be found in the `notebooks` directory.
   - `make_cycle_connections()` applies `# CYCLE_BREAK reconnect i j` merges (union-find) and returns `nx.Graph` (not `SWCModel`) since the result may contain cycles
   - Shared graph metrics via `_graph_attributes()` and `print_attributes()` helpers
 - **Geometry**:
-  - `Segment` dataclass and frustum meshing utilities (`frustum_mesh`, `batch_frusta`)
+  - `Frustum` dataclass and frustum meshing utilities (`frustum_mesh`, `batch_frusta`)
   - `FrustaSet.from_swc_model()` to build a batched frusta mesh from an `SWCModel`
   - `PointSet` for low-res spheres at arbitrary xyz points (for overlay markers)
 - **Visualization**:
@@ -25,7 +25,7 @@ Demo notebooks can be found in the `notebooks` directory.
   - `plot_frusta_with_centroid(model, frusta, ...)` to overlay skeleton and mesh
   - `plot_frusta_slider(frusta, min_scale, max_scale, steps)` interactive radius scale slider
   - `plot_model(...)` master entry point combining centroid, frusta, slider, and `PointSet` overlays
-  - `plot_frusta_timeseries(frusta, values, ...)` animate time-dependent per-segment scalars V_i(t) with a slider and playback controls
+  - `animate_frusta_timeseries(frusta, values, ...)` animate time-dependent per-frustum scalars V_i(t) with a slider and playback controls
   - Global config via `set_config(...)` (equal axes enforced by default, width/height, template)
 - Roadmap: morphometrics and analyses, I/O conversions, time-varying scalars and animations
 
@@ -37,8 +37,8 @@ Demo notebooks can be found in the `notebooks` directory.
   - `_parents` preserves the original directed parent of each node; `roots()`, `parent_of()`, `path_to_root()` use this map
   - Methods like `to_swc_file()` rely on the tree structure and only work correctly for valid SWC trees
   - `make_cycle_connections()` merges reconnection pairs and **returns `nx.Graph`** (not `SWCModel`) since the result may contain cycles
-- `Segment` dataclass and `FrustaSet` (batched frusta mesh)
-- `FrustaSet` ordering utilities: `print_segment_order()`, `reordered(...)`, and `per_segment_face_slices()` to help align external per-segment arrays with mesh order
+- `Frustum` dataclass and `FrustaSet` (batched frusta mesh)
+- `FrustaSet` ordering utilities: `frustum_order_map()`, `reordered(...)`, and `frustum_face_slices_map()` to help align external per-frustum arrays with mesh order
 - `PointSet` (batched spheres for overlay points)
 - Visualization functions in `viz.py`: `plot_centroid`, `plot_frusta`, `plot_frusta_with_centroid`, `plot_frusta_slider`, `plot_model`
 

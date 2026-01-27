@@ -23,11 +23,11 @@ Status: planning. No public API is stable yet.
 - [x] Decide initial package layout (initial modules in place)
   - `swctools/` package with modules:
     - [x] `io.py` (SWC reader/validator: `parse_swc`, `SWCRecord`, `SWCParseResult`)
-    - [x] `model.py` (`SWCModel` DiGraph; `GeneralModel` Graph; `_graph_attributes`; `print_attributes`)
-    - [x] `geometry.py` (`Segment` frustum construction, `PointSet` spheres, helper math)
+    - [x] `model.py` (`SWCModel` DiGraph; `_graph_attributes`; `print_attributes`)
+    - [x] `geometry.py` (`Frustum`, `FrustaSet`, `PointSet` spheres, helper math)
     - [x] `viz.py` (centroid, volumetric, `plot_model`, slider, overlay points)
     - [x] `config.py` (global Plotly config + `apply_layout`, equal-axes enforcement)
-    - [ ] `animation.py` (time-dependent scalar visualization) — consolidated into `viz.py` via `plot_frusta_timeseries`
+    - [ ] `animation.py` (time-dependent scalar visualization) — consolidated into `viz.py` via `animate_frusta_timeseries`
   - `data/` sample SWC files (small, clearly licensed)
   - `notebooks/` examples for Jupyter (user-authored; do not auto-create notebooks)
   - `tests/` unit tests
@@ -47,17 +47,9 @@ Status: planning. No public API is stable yet.
   - Node key: SWC id `n` (int)
   - Node attrs: `t` (int), `x`, `y`, `z` (floats), `r` (float), optional `meta`
   - Directed edges: parent ➔ child; support forest (multiple roots)
-- [x] Implement `GeneralModel(networkx.Graph)` for visualization and reconnection support
-  - Undirected graph built with header reconnections (`CYCLE_BREAK reconnect i j`)
-  - Constructors: `from_parse_result(...)`, `from_swc_file(...)`
-  - Merge policy: union-find over reconnect pairs (requires identical `(x, y, z, r)`), provenance via `merged_ids`, `lines`
-- [x] Graph metrics and printing helpers (`_graph_attributes`, `SWCModel.print_attributes`, `GeneralModel.print_attributes`)
-- [ ] Convenience methods
-  - `from_swc(path_or_buffer)` classmethod
-  - `to_dataframe()` for easy inspection
-  - `segments()` iterator yielding parent-child pairs and attributes
-  - `to_general_model(reconnect: bool = True)` to apply header-based reconnections
-  - `roots()`, `components()`, `depths()` utilities
+  - Tracks cycles using header reconnection directives (`CYCLE_BREAK reconnect i j`)
+  - Constructors: `from_swc_file(...)`, `from_parse_result(...)`
+- [x] Graph metrics and printing helpers (`_graph_attributes`, `SWCModel.print_attributes`)
 - [ ] Validation helpers
   - Ensure unique ids; parent either `-1` or existing id
   - Detect cycles, missing parents, invalid radii/coords
@@ -71,30 +63,29 @@ Status: planning. No public API is stable yet.
 - [x] Header annotations and reconnection
   - Parse lines like `# CYCLE_BREAK reconnect i j` into reconnection pairs
   - Validation of identical `(x, y, z, r)` available (configurable)
-  - Transitive merges supported in `GeneralModel` via union-find
   - Reconnection pairs exposed on `SWCParseResult.reconnections`
 - [ ] Validation layer (configurable strictness)
   - Enforce unique ids; check parent before child; allow out-of-order with fixup
 
 ### M4 — Centroid (skeleton) visualization
 
-- [x] Build edge list from `GeneralModel` suitable for `plotly.graph_objects.Scatter3d`
-- [x] `plot_centroid(general_model, ...) -> go.Figure`
+- [x] Build edge list from `SWCModel` suitable for `plotly.graph_objects.Scatter3d`
+- [x] `plot_model(swc_model, ...) -> go.Figure`
   - Options: color by tag/depth/component, show markers vs lines, line width scaling by radius (optional)
   - Aspect ratio, axis labels, background theme presets
   - Tests (figure structure, traces present, basic property checks)
 
-### M5 — Segment geometry (frusta) and volumetric visualization
+### M5 — Frustum geometry (frusta) and volumetric visualization
 
-- [x] `Segment` data structure
+- [x] `Frustum` data structure
   - Oriented frustum between points `a` and `b` with radii `r_a`, `r_b`
   - Stable local frame construction for mesh generation
-  - Optional end caps; degenerate handling (very short segments, zero radius)
+  - Optional end caps; degenerate handling (very short frusta, zero radius, etc.)
 
 - [x] Mesh batching utilities
   - Generate vertices and faces for entire model
-  - One `Mesh3d` per model (batched) vs per-segment trade-offs
-  - Color mapping by segment id/tag or by external scalar array
+  - One `Mesh3d` per model (batched) vs per-frustum trade-offs
+  - Color mapping by frustum id/tag or by external scalar array
   - Performance passes for moderate-sized morphologies
 - [x] Add uniform radius scaling for volumetric mesh (`plot_frusta(radius_scale=...)`)
 - [x] Overlay centroid + frusta (`plot_frusta_with_centroid`)
@@ -103,11 +94,11 @@ Status: planning. No public API is stable yet.
 - [x] `PointSet` geometry (low-res spheres) and integration into `plot_model`
 - [ ] Geometry tests (vertex counts, invariants, edge cases)
 
-### M6 — Dynamics (time-dependent scalars on segments)
+### M6 — Dynamics (time-dependent scalars on frusta)
 
-- [ ] Data container for per-segment time series `V_i(t)`
-- [x] `plot_frusta_timeseries(frusta, values, ...)` for Plotly animations with slider and playback controls
-- [x] Segment ordering/remap utilities in `FrustaSet` (`edge_uvs`, `print_segment_order`, `reordered`, `per_segment_face_slices`) to align values with mesh order
+- [ ] Data container for per-frustum time series `V_i(t)`
+- [x] `animate_frusta_timeseries(frusta, values, ...)` for Plotly animations with slider and playback controls
+- [x] Frustum ordering/remap utilities in `FrustaSet` (`edge_uvs`, `frustum_order_map`, `reordered`, `frustum_face_slices_map`) to align values with mesh order
 - [ ] Example notebook with synthetic dynamics
 
 ### M7 — Examples and documentation
@@ -120,7 +111,6 @@ Status: planning. No public API is stable yet.
 - [x] Update quick start to use `plot_model` (`docs/index.md`)
 - [x] API reference via mkdocstrings (`docs/api.md`)
 - [x] MkDocs nav + GitHub Pages workflow for docs
-- [ ] FAQ including `GeneralModel` reconnection semantics and usage tips
 
 ### M8 — Testing and quality
 
