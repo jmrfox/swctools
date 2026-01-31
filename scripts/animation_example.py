@@ -31,7 +31,7 @@ fig = animate_frusta_timeseries(
     colorscale="Viridis",
     fps=30,
     stride=1,
-    output_path="frusta_animation.html",
+    output_path="animations/frusta_animation.html",
     auto_open=True,
 )
 
