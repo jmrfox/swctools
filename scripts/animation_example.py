@@ -15,6 +15,8 @@ logging.basicConfig(level=logging.INFO)
 swc_filepath = Path("data/swc/TS2_s50.swc")
 frusta = FrustaSet.from_swc_file(swc_filepath)
 
+animation_file = Path("animations/example.html")
+
 n_frusta = frusta.n_frusta
 T = 10
 dt = 0.1
@@ -31,8 +33,8 @@ fig = animate_frusta_timeseries(
     colorscale="Viridis",
     fps=30,
     stride=1,
-    output_path="animations/frusta_animation.html",
+    output_path=animation_file,
     auto_open=True,
 )
 
-print("Animation saved to frusta_animation.html")
+print("Animation saved to", animation_file)
