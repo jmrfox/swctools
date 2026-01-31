@@ -799,7 +799,7 @@ def animate_frusta_timeseries(
     stride: int = 1,
     title: str | None = None,
     output_path: str | None = None,
-    auto_open: bool = True,
+    auto_open: bool = False,
 ):
     """Animate per-frustum values over time with interactive 3D controls.
 
@@ -836,7 +836,7 @@ def animate_frusta_timeseries(
     output_path : str | None
         Path to save the HTML file. If None, defaults to "frusta_animation.html".
     auto_open : bool
-        If True, automatically open the HTML file in the default browser (default: True).
+        If True, automatically open the HTML file in the default browser when saving (default: False).
 
     Returns
     -------
