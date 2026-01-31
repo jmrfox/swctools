@@ -6,26 +6,14 @@
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from typing import Sequence
 
 import plotly.graph_objects as go
 import logging
-from contextlib import contextmanager
 
 from .model import SWCModel
 from .geometry import FrustaSet, PointSet
 from .config import apply_layout
-
-
-# @contextmanager
-# def _suppress_geometry_logs():
-#     lg = logging.getLogger("swctools.geometry")
-#     prev_level = lg.level
-#     try:
-#         lg.setLevel(max(logging.WARNING, prev_level or 0))
-#         yield
-#     finally:
-#         lg.setLevel(prev_level)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -802,20 +790,22 @@ def animate_frusta_timeseries(
     time_domain: Sequence[float],
     amplitudes: Sequence[Sequence[float]],
     *,
-    cmap: str = "viridis",
+    colorscale: str = "Viridis",
     clim: tuple[float, float] | None = None,
-    scalar_bar: bool = True,
-    scalar_bar_args: dict | None = None,
+    opacity: float = 0.8,
+    flatshading: bool = True,
+    radius_scale: float = 1.0,
     fps: int = 30,
     stride: int = 1,
-    window_size: tuple[int, int] = (900, 700),
-    background: str = "white",
-    show_axes: bool = False,
-    notebook: bool = False,
-    off_screen: bool = False,
-    movie_path: str | None = None,
+    title: str | None = None,
+    output_path: str | None = None,
+    auto_open: bool = True,
 ):
-    """Animate per-frustum voltage values over time using PyVista.
+    """Animate per-frustum values over time with interactive 3D controls.
+
+    Creates a Plotly animation with play/pause controls, time slider, and full
+    3D interactivity (rotate, zoom, pan). The animation is saved to an HTML file
+    that can be opened in any web browser.
 
     Parameters
     ----------
@@ -826,122 +816,68 @@ def animate_frusta_timeseries(
     amplitudes : Sequence[Sequence[float]]
         Time series V_i(t) shaped (T, N), where T = len(time_domain) and
         N = frusta.n_frusta. Each time step provides one scalar per frustum.
-    cmap : str
-        Matplotlib colormap name (default: "viridis").
+    colorscale : str
+        Plotly colorscale name (default: "Viridis"). Examples: "Viridis", "Plasma",
+        "Inferno", "Jet", "RdBu", etc.
     clim : tuple[float, float] | None
         Color limits (vmin, vmax). If None, inferred from amplitudes.
-    scalar_bar : bool
-        Whether to show scalar bar (default: True).
-    scalar_bar_args : dict | None
-        Additional arguments passed to scalar bar configuration.
+    opacity : float
+        Mesh opacity (default: 0.8).
+    flatshading : bool
+        Enable flat shading on the mesh (default: True).
+    radius_scale : float
+        Uniform radius scaling applied to frusta before meshing (default: 1.0).
     fps : int
-        Frames per second for animation/movie (default: 30).
+        Frames per second for animation playback (default: 30).
     stride : int
         Temporal downsampling factor - use every `stride` time steps (default: 1).
-    window_size : tuple[int, int]
-        Render window size in pixels (default: (900, 700)).
-    background : str
-        Background color (default: "white").
-    show_axes : bool
-        Show orientation axes (default: False).
-    notebook : bool
-        Enable notebook-friendly rendering (default: False).
-    off_screen : bool
-        Enable off-screen rendering, required for movie export (default: False).
-    movie_path : str | None
-        If provided, renders animation to a movie file (e.g., "voltage.mp4").
+    title : str | None
+        Figure title. If None, defaults to "Frusta Animation".
+    output_path : str | None
+        Path to save the HTML file. If None, defaults to "frusta_animation.html".
+    auto_open : bool
+        If True, automatically open the HTML file in the default browser (default: True).
 
     Returns
     -------
-    pyvista.Plotter
-        The plotter instance for further interaction.
+    go.Figure
+        The Plotly figure object with animation frames.
+
+    Notes
+    -----
+    The resulting HTML file contains a fully interactive 3D visualization with:
+    - Play/Pause buttons for animation control
+    - Time slider to scrub through frames
+    - Full 3D rotation, zoom, and pan controls
+    - Colorbar showing value mapping
+
+    The file can be shared and opened on any system with a web browser, making
+    it highly portable and robust across different OS and display configurations.
     """
-    from .animation import animate_compartment_voltage, _frusta_to_pyvista_meshes
     import numpy as np
+    import webbrowser
+    from pathlib import Path
 
     logger = logging.getLogger(__name__)
 
     logger.info(
-        "animate_frusta_timeseries called: n_frusta=%d time_steps=%d fps=%d",
+        "animate_frusta_timeseries: n_frusta=%d time_steps=%d fps=%d stride=%d",
         frusta.n_frusta,
         len(time_domain),
         fps,
+        stride,
     )
 
-    # Convert FrustaSet to individual PyVista meshes
-    logger.debug("Converting FrustaSet to PyVista meshes...")
-    segment_meshes = _frusta_to_pyvista_meshes(frusta)
+    # Apply stride to time domain and amplitudes
+    time_domain = np.asarray(time_domain)
+    amplitudes = np.asarray(amplitudes)
 
-    # Convert amplitudes to numpy array with shape (T, N)
-    logger.debug("Converting amplitudes to numpy array...")
-    voltage_traces = np.array(amplitudes, dtype=np.float32)
-    logger.info("Data prepared: voltage_traces shape=%s", voltage_traces.shape)
+    if stride > 1:
+        time_domain = time_domain[::stride]
+        amplitudes = amplitudes[::stride]
+        logger.info("Applied stride=%d: reduced to %d frames", stride, len(time_domain))
 
-    # Call the PyVista animation function
-    logger.info("Calling animate_compartment_voltage...")
-    return animate_compartment_voltage(
-        time_domain=time_domain,
-        voltage_traces=voltage_traces,
-        segment_meshes=segment_meshes,
-        cmap=cmap,
-        clim=clim,
-        scalar_bar=scalar_bar,
-        scalar_bar_args=scalar_bar_args,
-        fps=fps,
-        stride=stride,
-        window_size=window_size,
-        background=background,
-        show_axes=show_axes,
-        notebook=notebook,
-        off_screen=off_screen,
-        movie_path=movie_path,
-    )
-
-
-def OLD_animate_frusta_timeseries(
-    frusta: FrustaSet,
-    time_domain: Sequence[float],
-    amplitudes: Sequence[Sequence[float]],
-    *,
-    colorscale: str | list = "Viridis",
-    cmin: Optional[float] = None,
-    cmax: Optional[float] = None,
-    opacity: float = 0.8,
-    flatshading: bool = True,
-    radius_scale: float = 1.0,
-    fps: int = 10,
-    title: str | None = None,
-) -> go.Figure:
-    """Animate per-frustum values over time by coloring frusta faces.
-
-    Parameters
-    ----------
-    frusta: FrustaSet
-        Batched frusta mesh. Optionally scaled via `radius_scale` before rendering.
-    time_domain: Sequence[float]
-        Time values for each frame. Length must match the time axis of amplitudes.
-    amplitudes: Sequence[Sequence[float]]
-        Time series V_i(t) shaped (T, N), where T = len(time_domain) and N = `frusta.n_frusta`.
-        Each time step provides one scalar per frustum in the current order.
-    colorscale: str | list
-        Plotly colorscale for mapping intensities.
-    cmin, cmax: float | None
-        Fixed color range. If omitted, inferred from the data across all frames.
-    opacity: float
-        Mesh opacity.
-    flatshading: bool
-        Enable flat shading on the mesh.
-    radius_scale: float
-        Uniform radius scaling applied before meshing (1.0 = no change).
-    fps: int
-        Playback frame rate for the Play button.
-
-    Returns
-    -------
-    plotly.graph_objects.Figure
-        A figure with a Mesh3d trace and animation frames, plus a slider and play/pause controls.
-    """
-    logger = logging.getLogger(__name__)
+    # Scale frusta if needed
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
     x, y, z, i, j, k = fr.to_mesh3d_arrays()
     slices = list(fr.frustum_face_slices_map().values())
@@ -951,7 +887,8 @@ def OLD_animate_frusta_timeseries(
         raise ValueError("amplitudes must have at least one time step")
     if len(time_domain) != len(amplitudes):
         raise ValueError(
-            f"time_domain length ({len(time_domain)}) must match amplitudes time axis length ({len(amplitudes)})"
+            f"time_domain length ({len(time_domain)}) must match amplitudes "
+            f"time axis length ({len(amplitudes)})"
         )
     T = len(amplitudes)
     N = fr.n_frusta
@@ -961,20 +898,24 @@ def OLD_animate_frusta_timeseries(
         )
 
     def faces_intensity(vt: Sequence[float]) -> list[float]:
+        """Map per-frustum values to per-face intensity."""
         arr: list[float] = []
         for (start, count), val in zip(slices, vt):
             arr.extend([float(val)] * count)
         return arr
 
-    if cmin is None or cmax is None:
-        vmin = min(min(vt) for vt in amplitudes)
-        vmax = max(max(vt) for vt in amplitudes)
-        if cmin is None:
-            cmin = float(vmin)
-        if cmax is None:
-            cmax = float(vmax)
-    init = amplitudes[0]
-    intensity0 = faces_intensity(init)
+    # Determine color limits
+    if clim is None:
+        vmin = float(np.min(amplitudes))
+        vmax = float(np.max(amplitudes))
+        cmin, cmax = vmin, vmax
+    else:
+        cmin, cmax = clim
+
+    logger.info("Color limits: [%.3f, %.3f]", cmin, cmax)
+
+    # Create initial mesh
+    intensity0 = faces_intensity(amplitudes[0])
     mesh = go.Mesh3d(
         x=x,
         y=y,
@@ -991,7 +932,11 @@ def OLD_animate_frusta_timeseries(
         cmax=cmax,
         showscale=True,
         name="frusta",
+        colorbar=dict(title="Amplitude"),
     )
+
+    # Create animation frames
+    logger.info("Creating %d animation frames...", T)
     frames = []
     for t, vt in enumerate(amplitudes):
         intens = faces_intensity(vt)
@@ -1017,6 +962,10 @@ def OLD_animate_frusta_timeseries(
                 ],
             )
         )
+        if (t + 1) % 10 == 0 or (t + 1) == T:
+            logger.debug("Created %d/%d frames", t + 1, T)
+
+    # Animation controls
     frame_duration = int(1000 / max(1, fps))
     slider_steps = [
         {
@@ -1033,13 +982,15 @@ def OLD_animate_frusta_timeseries(
         }
         for t in range(T)
     ]
+
     sliders = [
         {
             "active": 0,
-            "currentvalue": {"prefix": "t: ", "visible": True},
+            "currentvalue": {"prefix": "t = ", "visible": True},
             "steps": slider_steps,
         }
     ]
+
     updatemenus = [
         {
             "type": "buttons",
@@ -1076,16 +1027,35 @@ def OLD_animate_frusta_timeseries(
             ],
         }
     ]
+
+    # Create figure
     fig = go.Figure(data=[mesh], frames=frames)
-    apply_layout(fig, title=title or "Frusta timeseries")
-    fig.update_layout(sliders=sliders, updatemenus=updatemenus)
-    logger.info(
-        "animate_frusta_timeseries T=%d N=%d colorscale=%s fps=%d",
-        T,
-        N,
-        colorscale,
-        fps,
+    apply_layout(fig, title=title or "Frusta Animation")
+    fig.update_layout(
+        sliders=sliders,
+        updatemenus=updatemenus,
+        # Increase figure size for better visibility in HTML
+        width=1200,
+        height=900,
     )
+
+    logger.info("Animation figure created with %d frames at %d fps", T, fps)
+
+    # Save to HTML file
+    if output_path is None:
+        output_path = "frusta_animation.html"
+
+    output_file = Path(output_path)
+    logger.info("Saving animation to: %s", output_file.absolute())
+    # auto_play=False prevents animation from starting on page load
+    fig.write_html(str(output_file), auto_play=False)
+    logger.info("Animation saved successfully")
+
+    # Auto-open in browser
+    if auto_open:
+        logger.info("Opening animation in default browser...")
+        webbrowser.open(f"file://{output_file.absolute()}")
+
     return fig
 
 

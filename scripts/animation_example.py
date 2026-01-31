@@ -1,5 +1,8 @@
 """
-Animation example script for swctools using pyvista.
+Animation example script for swctools using Plotly.
+
+Creates an interactive HTML animation with 3D controls (rotate, zoom, pan)
+and animation playback controls (play/pause, time slider).
 """
 
 import logging
@@ -7,7 +10,7 @@ from pathlib import Path
 import numpy as np
 from swctools import FrustaSet, animate_frusta_timeseries
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 swc_filepath = Path("data/swc/TS2_s50.swc")
 frusta = FrustaSet.from_swc_file(swc_filepath)
@@ -21,8 +24,15 @@ V = np.zeros((len(time_domain), n_frusta))
 for i, t in enumerate(time_domain):
     V[i, :] = np.sin(freqs * t)
 
-plotter = animate_frusta_timeseries(
+fig = animate_frusta_timeseries(
     frusta,
     time_domain=time_domain,
     amplitudes=V,
+    colorscale="Viridis",
+    fps=30,
+    stride=1,
+    output_path="frusta_animation.html",
+    auto_open=True,
 )
+
+print("Animation saved to frusta_animation.html")
