@@ -99,10 +99,19 @@ def plot_centroid(
     line_width: float = 2.0,
     show_nodes: bool = True,
     title: str | None = None,
+    width: int = 1200,
+    height: int = 900,
 ) -> go.Figure:
     """Plot centroid skeleton from an `SWCModel`.
 
     Edges are drawn as line segments in 3D using Scatter3d.
+
+    Parameters
+    ----------
+    width : int
+        Figure width in pixels (default: 1200).
+    height : int
+        Figure height in pixels (default: 900).
     """
     logger = logging.getLogger(__name__)
 
@@ -132,6 +141,7 @@ def plot_centroid(
 
     fig = go.Figure(data=data)
     apply_layout(fig, title=title or "Centroid Skeleton")
+    fig.update_layout(width=width, height=height)
     logger.info(
         "plot_centroid edges=%d show_nodes=%s", len(list(swc_model.edges)), show_nodes
     )
@@ -147,6 +157,8 @@ def plot_frusta(
     radius_scale: float = 1.0,
     tag_colors: dict[int, str] | None = None,
     title: str | None = None,
+    width: int = 1200,
+    height: int = 900,
 ) -> go.Figure:
     """Plot a FrustaSet as a Mesh3d figure.
 
@@ -196,6 +208,7 @@ def plot_frusta(
         )
     fig = go.Figure(data=[mesh])
     apply_layout(fig, title=title or "Frusta Mesh")
+    fig.update_layout(width=width, height=height)
     logger.info(
         "plot_frusta frusta=%d radius_scale=%s flatshading=%s",
         frusta.n_frusta,
@@ -219,6 +232,8 @@ def plot_frusta_with_centroid(
     show_nodes: bool = False,
     node_size: float = 2.0,
     title: str | None = None,
+    width: int = 1200,
+    height: int = 900,
 ) -> go.Figure:
     """Overlay frusta mesh with centroid skeleton from an `SWCModel`.
 
@@ -284,6 +299,7 @@ def plot_frusta_with_centroid(
 
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Centroid + Frusta")
+    fig.update_layout(width=width, height=height)
     logger.info(
         "plot_frusta_with_centroid edges=%d frusta=%d radius_scale=%s",
         len(list(swc_model.edges)),
@@ -304,6 +320,8 @@ def plot_frusta_slider(
     max_scale: float = 1.0,
     steps: int = 21,
     title: str | None = None,
+    width: int = 1200,
+    height: int = 900,
 ) -> go.Figure:
     """Interactive slider (0..1 default) controlling uniform `radius_scale`.
 
@@ -468,7 +486,12 @@ def plot_frusta_slider(
 
     fig = go.Figure(data=[mesh], frames=frames)
     apply_layout(fig, title=title or "Frusta Mesh — radius_scale slider")
-    fig.update_layout(sliders=sliders, updatemenus=updatemenus)
+    fig.update_layout(
+        sliders=sliders,
+        updatemenus=updatemenus,
+        width=width,
+        height=height,
+    )
     logger.info(
         "plot_frusta_slider frusta=%d scales=%d min=%s max=%s",
         frusta.n_frusta,
@@ -509,12 +532,28 @@ def plot_model(
     point_set: PointSet | None = None,
     point_size: float = 1.0,
     point_color: str = "#d62728",
+    # HTML output options
+    output_path: str | None = None,
+    auto_open: bool = False,
+    width: int = 1200,
+    height: int = 900,
 ) -> go.Figure:
     """Master visualization combining centroid, frusta, slider, and overlay points.
 
     - If `frusta` is not provided and `gm` is, a `FrustaSet` is built from `gm`.
     - If `slider=True` and `show_frusta=True`, a Plotly slider controls `radius_scale`.
     - `points` overlays arbitrary xyz positions as small markers.
+
+    Parameters
+    ----------
+    output_path : str | None
+        If provided, saves the figure to an HTML file at this path.
+    auto_open : bool
+        If True and output_path is provided, opens the HTML file in browser.
+    width : int
+        Figure width in pixels (default: 1200).
+    height : int
+        Figure height in pixels (default: 900).
     """
 
     logger = logging.getLogger(__name__)
@@ -733,13 +772,33 @@ def plot_model(
 
             fig = go.Figure(data=traces, frames=frames)
             apply_layout(fig, title=title or "Model")
-            fig.update_layout(sliders=sliders, updatemenus=updatemenus)
+            fig.update_layout(
+                sliders=sliders,
+                updatemenus=updatemenus,
+                width=width,
+                height=height,
+            )
             logger.info(
                 "plot_model slider=True frusta=%d radius_scale_range=[%s,%s]",
                 base_fr.n_frusta,
                 min_scale,
                 max_scale,
             )
+
+            # Save to HTML file if requested
+            if output_path is not None:
+                from pathlib import Path
+                import webbrowser
+
+                output_file = Path(output_path)
+                logger.info("Saving plot to: %s", output_file.absolute())
+                fig.write_html(str(output_file), auto_play=False)
+                logger.info("Plot saved successfully")
+
+                if auto_open:
+                    logger.info("Opening plot in default browser...")
+                    webbrowser.open(f"file://{output_file.absolute()}")
+
             return fig
         else:
             # Static radius scale
@@ -776,12 +835,28 @@ def plot_model(
 
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Model")
+    fig.update_layout(width=width, height=height)
     logger.info(
         "plot_model slider=False frusta=%s show_frusta=%s show_centroid=%s",
         base_fr.n_frusta if base_fr is not None else None,
         show_frusta,
         show_centroid,
     )
+
+    # Save to HTML file if requested
+    if output_path is not None:
+        from pathlib import Path
+        import webbrowser
+
+        output_file = Path(output_path)
+        logger.info("Saving plot to: %s", output_file.absolute())
+        fig.write_html(str(output_file), auto_play=False)
+        logger.info("Plot saved successfully")
+
+        if auto_open:
+            logger.info("Opening plot in default browser...")
+            webbrowser.open(f"file://{output_file.absolute()}")
+
     return fig
 
 
@@ -1066,6 +1141,8 @@ def plot_points(
     opacity: float = 1.0,
     size_scale: float = 1.0,
     title: str | None = None,
+    width: int = 1200,
+    height: int = 900,
 ) -> go.Figure:
     """Plot a PointSet as a collection of small spheres.
 
@@ -1106,6 +1183,7 @@ def plot_points(
 
     fig = go.Figure(data=[mesh])
     apply_layout(fig, title=title or "Point Set")
+    fig.update_layout(width=width, height=height)
     logger.info(
         "plot_points count=%d size_scale=%s",
         len(point_set.points),
