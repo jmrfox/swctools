@@ -537,6 +537,7 @@ def plot_model(
     auto_open: bool = False,
     width: int = 1200,
     height: int = 900,
+    hide_axes: bool = False,
 ) -> go.Figure:
     """Master visualization combining centroid, frusta, slider, and overlay points.
 
@@ -554,6 +555,8 @@ def plot_model(
         Figure width in pixels (default: 1200).
     height : int
         Figure height in pixels (default: 900).
+    hide_axes : bool
+        If True, hides all axes, grid, and background to show only the model (default: False).
     """
 
     logger = logging.getLogger(__name__)
@@ -778,6 +781,14 @@ def plot_model(
                 width=width,
                 height=height,
             )
+            if hide_axes:
+                fig.update_layout(
+                    scene=dict(
+                        xaxis=dict(visible=False),
+                        yaxis=dict(visible=False),
+                        zaxis=dict(visible=False),
+                    )
+                )
             logger.info(
                 "plot_model slider=True frusta=%d radius_scale_range=[%s,%s]",
                 base_fr.n_frusta,
@@ -836,6 +847,14 @@ def plot_model(
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Model")
     fig.update_layout(width=width, height=height)
+    if hide_axes:
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(visible=False),
+                yaxis=dict(visible=False),
+                zaxis=dict(visible=False),
+            )
+        )
     logger.info(
         "plot_model slider=False frusta=%s show_frusta=%s show_centroid=%s",
         base_fr.n_frusta if base_fr is not None else None,
