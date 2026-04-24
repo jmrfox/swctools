@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from typing import Sequence
+import math
 
 import plotly.graph_objects as go
 import logging
@@ -85,6 +86,243 @@ def _build_tag_facecolors(
         color = tag_colors.get(frustum.tag, default_color)
         facecolors.extend([color] * count)
     return facecolors
+
+
+def _generate_hemisphere_mesh(
+    center: tuple[float, float, float],
+    radius: float,
+    direction: tuple[float, float, float],
+    subdivisions: int = 10,
+) -> tuple[list[tuple[float, float, float]], list[tuple[int, int, int]]]:
+    """Generate a hemisphere mesh oriented along a direction vector.
+
+    Parameters
+    ----------
+    center : tuple[float, float, float]
+        Center point of the hemisphere (on the flat face).
+    radius : float
+        Radius of the hemisphere.
+    direction : tuple[float, float, float]
+        Direction vector pointing from the flat face toward the curved side.
+    subdivisions : int
+        Number of subdivisions for the hemisphere (default: 10).
+
+    Returns
+    -------
+    tuple[list[tuple[float, float, float]], list[tuple[int, int, int]]]
+        (vertices, faces) where vertices are 3D points and faces are triangular indices.
+    """
+    # Normalize direction vector
+    dx, dy, dz = direction
+    length = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if length < 1e-12:
+        dx, dy, dz = 0.0, 0.0, 1.0
+    else:
+        dx, dy, dz = dx / length, dy / length, dz / length
+
+    # Build orthonormal frame with W = direction
+    W = (dx, dy, dz)
+    # Pick a vector not parallel to W
+    abs_w = (abs(dx), abs(dy), abs(dz))
+    tmp = (1.0, 0.0, 0.0) if abs_w[0] <= 0.9 else (0.0, 1.0, 0.0)
+    # U = tmp × W
+    ux = tmp[1] * W[2] - tmp[2] * W[1]
+    uy = tmp[2] * W[0] - tmp[0] * W[2]
+    uz = tmp[0] * W[1] - tmp[1] * W[0]
+    u_len = math.sqrt(ux * ux + uy * uy + uz * uz)
+    if u_len < 1e-12:
+        tmp = (0.0, 1.0, 0.0)
+        ux = tmp[1] * W[2] - tmp[2] * W[1]
+        uy = tmp[2] * W[0] - tmp[0] * W[2]
+        uz = tmp[0] * W[1] - tmp[1] * W[0]
+        u_len = math.sqrt(ux * ux + uy * uy + uz * uz)
+    U = (ux / u_len, uy / u_len, uz / u_len)
+    # V = W × U
+    vx = W[1] * U[2] - W[2] * U[1]
+    vy = W[2] * U[0] - W[0] * U[2]
+    vz = W[0] * U[1] - W[1] * U[0]
+    V = (vx, vy, vz)
+
+    vertices = []
+    faces = []
+
+    # Add center point as first vertex
+    vertices.append(center)
+
+    # Generate hemisphere vertices (only phi from 0 to pi/2)
+    for i in range(1, subdivisions + 1):
+        phi = (math.pi / 2) * (i / subdivisions)  # 0 to pi/2
+        for j in range(subdivisions):
+            theta = 2 * math.pi * (j / subdivisions)
+
+            # Spherical coordinates: x = r*sin(phi)*cos(theta), y = r*sin(phi)*sin(theta), z = r*cos(phi)
+            r_proj = radius * math.sin(phi)
+            z_comp = radius * math.cos(phi)
+
+            # Local coordinates in the UVW frame
+            local_x = r_proj * math.cos(theta)
+            local_y = r_proj * math.sin(theta)
+            local_z = z_comp
+
+            # Transform to world coordinates
+            px = center[0] + local_x * U[0] + local_y * V[0] + local_z * W[0]
+            py = center[1] + local_x * U[1] + local_y * V[1] + local_z * W[1]
+            pz = center[2] + local_x * U[2] + local_y * V[2] + local_z * W[2]
+
+            vertices.append((px, py, pz))
+
+    # Generate faces
+    # Connect center to first ring
+    for j in range(subdivisions):
+        j_next = (j + 1) % subdivisions
+        faces.append((0, 1 + j, 1 + j_next))
+
+    # Connect rings
+    for i in range(subdivisions - 1):
+        for j in range(subdivisions):
+            j_next = (j + 1) % subdivisions
+            current = 1 + i * subdivisions + j
+            current_next = 1 + i * subdivisions + j_next
+            next_ring = 1 + (i + 1) * subdivisions + j
+            next_ring_next = 1 + (i + 1) * subdivisions + j_next
+
+            faces.append((current, next_ring, next_ring_next))
+            faces.append((current, next_ring_next, current_next))
+
+    return vertices, faces
+
+
+def _get_proper_terminals(
+    swc_model: SWCModel,
+) -> list[int]:
+    """Get proper terminal points: nodes with exactly 1 edge, not in reconnections.
+
+    Parameters
+    ----------
+    swc_model : SWCModel
+        The SWC model to query.
+
+    Returns
+    -------
+    list[int]
+        List of node IDs that are proper terminal points.
+    """
+    reconnections = swc_model.graph.get("reconnections", [])
+    reconnection_nodes = set()
+    for u, v in reconnections:
+        reconnection_nodes.add(u)
+        reconnection_nodes.add(v)
+
+    terminals = []
+    for node_id in swc_model.nodes:
+        # Check if node has exactly 1 edge (degree 1 in undirected view)
+        if swc_model.degree(node_id) == 1 and node_id not in reconnection_nodes:
+            terminals.append(node_id)
+
+    return terminals
+
+
+def _build_endcap_meshes(
+    swc_model: SWCModel,
+    frusta: FrustaSet,
+    tag_colors: dict[int, str] | None = None,
+    default_color: str = "lightblue",
+) -> tuple[
+    list[tuple[float, float, float]],
+    list[tuple[int, int, int]],
+    list[str] | None,
+]:
+    """Build endcap hemisphere meshes for proper terminal points.
+
+    Parameters
+    ----------
+    swc_model : SWCModel
+        The SWC model.
+    frusta : FrustaSet
+        The frusta set to get radii from.
+    tag_colors : dict[int, str] | None
+        Optional tag-to-color mapping.
+    default_color : str
+        Default color if tag_colors not provided or tag not found.
+
+    Returns
+    -------
+    tuple[list[tuple[float, float, float]], list[tuple[int, int, int]], list[str] | None]
+        (vertices, faces, facecolors) for all endcaps combined.
+    """
+    terminals = _get_proper_terminals(swc_model)
+    if not terminals:
+        return [], [], None
+
+    # Build mapping from node to frustum
+    node_to_frustum = {}
+    if frusta.edge_uvs is not None:
+        for idx, (u, v) in enumerate(frusta.edge_uvs):
+            node_to_frustum[u] = (idx, v)  # (frustum_idx, other_node)
+            node_to_frustum[v] = (idx, u)
+
+    all_vertices = []
+    all_faces = []
+    all_facecolors = [] if tag_colors is not None else None
+
+    for terminal_id in terminals:
+        if terminal_id not in node_to_frustum:
+            continue
+
+        frustum_idx, parent_id = node_to_frustum[terminal_id]
+        frustum = frusta.frusta[frustum_idx]
+
+        # Get terminal position and radius
+        terminal_xyz = swc_model.get_node_xyz(terminal_id)
+        parent_xyz = swc_model.get_node_xyz(parent_id)
+
+        # Determine which end of the frustum corresponds to the terminal
+        # Check if terminal is at 'a' or 'b' end of frustum
+        dist_to_a = sum((terminal_xyz[i] - frustum.a[i]) ** 2 for i in range(3))
+        dist_to_b = sum((terminal_xyz[i] - frustum.b[i]) ** 2 for i in range(3))
+
+        if dist_to_a < dist_to_b:
+            # Terminal is at 'a' end
+            radius = frustum.ra
+        else:
+            # Terminal is at 'b' end
+            radius = frustum.rb
+
+        # Direction vector: from parent to terminal
+        direction = (
+            terminal_xyz[0] - parent_xyz[0],
+            terminal_xyz[1] - parent_xyz[1],
+            terminal_xyz[2] - parent_xyz[2],
+        )
+
+        # Generate hemisphere mesh
+        vertices, faces = _generate_hemisphere_mesh(
+            center=terminal_xyz,
+            radius=radius,
+            direction=direction,
+            subdivisions=10,
+        )
+
+        # Offset face indices by current vertex count
+        vertex_offset = len(all_vertices)
+        offset_faces = [
+            (f[0] + vertex_offset, f[1] + vertex_offset, f[2] + vertex_offset)
+            for f in faces
+        ]
+
+        all_vertices.extend(vertices)
+        all_faces.extend(offset_faces)
+
+        # Add face colors if needed
+        if all_facecolors is not None:
+            color = (
+                tag_colors.get(frustum.tag, default_color)
+                if tag_colors
+                else default_color
+            )
+            all_facecolors.extend([color] * len(faces))
+
+    return all_vertices, all_faces, all_facecolors
 
 
 # ----------------------------------------------------------------------------------------------
@@ -512,6 +750,7 @@ def plot_model(
     # Frusta build options (used if frusta is None and gm provided)
     sides: int = 16,
     end_caps: bool = False,
+    plot_endcaps: bool = False,
     # Frusta appearance
     color: str = "lightblue",
     opacity: float = 0.8,
@@ -541,12 +780,16 @@ def plot_model(
 ) -> go.Figure:
     """Master visualization combining centroid, frusta, slider, and overlay points.
 
-    - If `frusta` is not provided and `gm` is, a `FrustaSet` is built from `gm`.
+    - If `frusta` is not provided and `swc_model` is, a `FrustaSet` is built from `swc_model`.
     - If `slider=True` and `show_frusta=True`, a Plotly slider controls `radius_scale`.
     - `points` overlays arbitrary xyz positions as small markers.
 
     Parameters
     ----------
+    plot_endcaps : bool
+        If True, plot hemisphere endcaps on proper terminal points (nodes with
+        exactly 1 edge that are not in reconnections list). Endcaps are oriented
+        along the tangent direction (parent to terminal). Default: False.
     output_path : str | None
         If provided, saves the figure to an HTML file at this path.
     auto_open : bool
@@ -843,6 +1086,47 @@ def plot_model(
                     name="frusta",
                 )
             traces.insert(0, mesh)  # keep mesh on bottom for visibility
+
+    # Add endcaps if requested
+    if plot_endcaps and swc_model is not None and base_fr is not None:
+        endcap_verts, endcap_faces, endcap_colors = _build_endcap_meshes(
+            swc_model, base_fr, tag_colors, color
+        )
+        if endcap_verts:
+            ex = [v[0] for v in endcap_verts]
+            ey = [v[1] for v in endcap_verts]
+            ez = [v[2] for v in endcap_verts]
+            ei = [f[0] for f in endcap_faces]
+            ej = [f[1] for f in endcap_faces]
+            ek = [f[2] for f in endcap_faces]
+
+            if endcap_colors is not None:
+                endcap_mesh = go.Mesh3d(
+                    x=ex,
+                    y=ey,
+                    z=ez,
+                    i=ei,
+                    j=ej,
+                    k=ek,
+                    facecolor=endcap_colors,
+                    opacity=opacity,
+                    flatshading=flatshading,
+                    name="endcaps",
+                )
+            else:
+                endcap_mesh = go.Mesh3d(
+                    x=ex,
+                    y=ey,
+                    z=ez,
+                    i=ei,
+                    j=ej,
+                    k=ek,
+                    color=color,
+                    opacity=opacity,
+                    flatshading=flatshading,
+                    name="endcaps",
+                )
+            traces.insert(1, endcap_mesh)
 
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Model")
