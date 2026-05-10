@@ -336,7 +336,7 @@ def plot_centroid(
     marker_size: float = 2.0,
     line_width: float = 2.0,
     show_nodes: bool = True,
-    title: str | None = None,
+    title: str = "Centroid",
     width: int = 1200,
     height: int = 900,
 ) -> go.Figure:
@@ -346,10 +346,25 @@ def plot_centroid(
 
     Parameters
     ----------
+    swc_model : SWCModel
+        The SWC model to plot.
+    marker_size : float
+        Size of node markers (default: 2.0).
+    line_width : float
+        Width of edge lines (default: 2.0).
+    show_nodes : bool
+        Whether to show node markers (default: True).
+    title : str
+        Figure title (default: "Centroid").
     width : int
         Figure width in pixels (default: 1200).
     height : int
         Figure height in pixels (default: 900).
+
+    Returns
+    -------
+    go.Figure
+        Plotly figure with the centroid skeleton.
     """
     logger = logging.getLogger(__name__)
 
@@ -378,7 +393,7 @@ def plot_centroid(
         data.append(node_trace)
 
     fig = go.Figure(data=data)
-    apply_layout(fig, title=title or "Centroid Skeleton")
+    apply_layout(fig, title=title)
     fig.update_layout(width=width, height=height)
     logger.info(
         "plot_centroid edges=%d show_nodes=%s", len(list(swc_model.edges)), show_nodes
@@ -394,7 +409,7 @@ def plot_frusta(
     flatshading: bool = True,
     radius_scale: float = 1.0,
     tag_colors: dict[int, str] | None = None,
-    title: str | None = None,
+    title: str = "Frusta Set",
     width: int = 1200,
     height: int = 900,
 ) -> go.Figure:
@@ -405,16 +420,29 @@ def plot_frusta(
     frusta: FrustaSet
         Batched frusta mesh to render.
     color: str
-        Mesh color.
+        Mesh color (default: "lightblue").
     opacity: float
-        Mesh opacity.
+        Mesh opacity (default: 0.8).
     flatshading: bool
-        Whether to enable flat shading.
+        Whether to enable flat shading (default: True).
     radius_scale: float
-        Uniform scale applied to all frustum radii before meshing (1.0 = no change).
+        Uniform scale applied to all frustum radii before meshing
+        (1.0 = no change) (default: 1.0).
     tag_colors: dict[int, str] | None
-        Optional mapping {tag: color}. If provided, each frustum is colored
-        uniformly according to its tag (fallback to `color` if a tag is missing).
+        Optional mapping {tag: color}. If provided, each frustum
+        is colored uniformly according to its tag (fallback to `color`
+        if a tag is missing).
+    title: str
+        Figure title (default: "Frusta Set").
+    width: int
+        Figure width in pixels (default: 1200).
+    height: int
+        Figure height in pixels (default: 900).
+
+    Returns
+    -------
+    go.Figure
+        Plotly figure with the frusta mesh.
     """
     logger = logging.getLogger(__name__)
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
@@ -445,7 +473,7 @@ def plot_frusta(
             flatshading=flatshading,
         )
     fig = go.Figure(data=[mesh])
-    apply_layout(fig, title=title or "Frusta Mesh")
+    apply_layout(fig, title=title)
     fig.update_layout(width=width, height=height)
     logger.info(
         "plot_frusta frusta=%d radius_scale=%s flatshading=%s",
@@ -470,13 +498,49 @@ def plot_frusta_with_centroid(
     show_nodes: bool = False,
     node_size: float = 2.0,
     node_color: str = "#1f77b4",
-    title: str | None = None,
+    title: str = "Frusta with Centroid",
     width: int = 1200,
     height: int = 900,
 ) -> go.Figure:
     """Overlay frusta mesh with centroid skeleton from an `SWCModel`.
 
-    Parameters mirror `plot_centroid` and `plot_frusta` with an extra `radius_scale`.
+    Parameters
+    ----------
+    swc_model : SWCModel
+        The SWC model for centroid plotting.
+    frusta : FrustaSet
+        The frusta set to plot.
+    color: str
+        Mesh color (default: "lightblue").
+    opacity: float
+        Mesh opacity (default: 0.8).
+    flatshading: bool
+        Whether to enable flat shading (default: True).
+    radius_scale: float
+        Uniform scale applied to all frustum radii before meshing (default: 1.0).
+    tag_colors: dict[int, str] | None
+        Optional mapping {tag: color} for frustum coloring.
+    centroid_color: str
+        Color for centroid lines (default: "#1f77b4").
+    centroid_line_width: float
+        Width of centroid lines (default: 2.0).
+    show_nodes: bool
+        Whether to show node markers (default: False).
+    node_size: float
+        Size of node markers (default: 2.0).
+    node_color: str
+        Color for node markers (default: "#1f77b4").
+    title: str
+        Figure title (default: "Frusta with Centroid").
+    width: int
+        Figure width in pixels (default: 1200).
+    height: int
+        Figure height in pixels (default: 900).
+
+    Returns
+    -------
+    go.Figure
+        Plotly figure with frusta and centroid overlay.
     """
     logger = logging.getLogger(__name__)
 
@@ -537,7 +601,7 @@ def plot_frusta_with_centroid(
     traces.append(mesh)
 
     fig = go.Figure(data=traces)
-    apply_layout(fig, title=title or "Centroid + Frusta")
+    apply_layout(fig, title=title)
     fig.update_layout(width=width, height=height)
     logger.info(
         "plot_frusta_with_centroid edges=%d frusta=%d radius_scale=%s",
@@ -558,13 +622,43 @@ def plot_frusta_slider(
     min_scale: float = 0.0,
     max_scale: float = 1.0,
     steps: int = 21,
-    title: str | None = None,
+    title: str = "Frusta Set",
     width: int = 1200,
     height: int = 900,
 ) -> go.Figure:
     """Interactive slider (0..1 default) controlling uniform `radius_scale`.
 
     Precomputes frames at evenly spaced scales between `min_scale` and `max_scale`.
+
+    Parameters
+    ----------
+    frusta: FrustaSet
+        Batched frusta mesh to render.
+    color: str
+        Mesh color (default: "lightblue").
+    opacity: float
+        Mesh opacity (default: 0.8).
+    flatshading: bool
+        Whether to enable flat shading (default: True).
+    tag_colors: dict[int, str] | None
+        Optional mapping {tag: color} for frustum coloring.
+    min_scale: float
+        Minimum radius scale for slider (default: 0.0).
+    max_scale: float
+        Maximum radius scale for slider (default: 1.0).
+    steps: int
+        Number of slider steps (default: 21).
+    title: str
+        Figure title (default: "Frusta Set").
+    width: int
+        Figure width in pixels (default: 1200).
+    height: int
+        Figure height in pixels (default: 900).
+
+    Returns
+    -------
+    go.Figure
+        Plotly figure with interactive radius scale slider.
     """
     logger = logging.getLogger(__name__)
     steps = max(2, int(steps))
@@ -724,7 +818,7 @@ def plot_frusta_slider(
     ]
 
     fig = go.Figure(data=[mesh], frames=frames)
-    apply_layout(fig, title=title or "Frusta Mesh — radius_scale slider")
+    apply_layout(fig, title=title)
     fig.update_layout(
         sliders=sliders,
         updatemenus=updatemenus,
@@ -747,7 +841,7 @@ def plot_model(
     frusta: FrustaSet | None = None,
     show_frusta: bool = True,
     show_centroid: bool = True,
-    title: str | None = None,
+    title: str = "Model",
     # Frusta build options (used if frusta is None and gm provided)
     sides: int = 16,
     end_caps: bool = False,
@@ -788,10 +882,58 @@ def plot_model(
 
     Parameters
     ----------
+    swc_model : SWCModel | None
+        The SWC model for centroid plotting. Required if frusta is None.
+    frusta : FrustaSet | None
+        Pre-built frusta set. If None, built from swc_model.
+    show_frusta : bool
+        Whether to show frusta mesh (default: True).
+    show_centroid : bool
+        Whether to show centroid skeleton (default: True).
+    title : str
+        Figure title (default: "Model").
+    sides : int
+        Number of sides for frustum construction (default: 16).
+    end_caps : bool
+        Whether to add end caps during frustum construction (default: False).
     plot_endcaps : bool
         If True, plot hemisphere endcaps on proper terminal points (nodes with
         exactly 1 edge that are not in reconnections list). Endcaps are oriented
-        along the tangent direction (parent to terminal). Default: False.
+        along the tangent direction (parent to terminal) (default: False).
+    color : str
+        Mesh color (default: "lightblue").
+    opacity : float
+        Mesh opacity (default: 0.8).
+    flatshading : bool
+        Whether to enable flat shading (default: True).
+    tag_colors : dict[int, str] | None
+        Optional mapping {tag: color} for frustum coloring.
+    radius_scale : float
+        Uniform radius scaling (default: 1.0).
+    slider : bool
+        Whether to add interactive radius scale slider (default: False).
+    min_scale : float
+        Minimum scale for slider (default: 0.0).
+    max_scale : float
+        Maximum scale for slider (default: 1.0).
+    steps : int
+        Number of slider steps (default: 21).
+    centroid_color : str
+        Color for centroid lines (default: "#1f77b4").
+    centroid_line_width : float
+        Width of centroid lines (default: 2.0).
+    show_nodes : bool
+        Whether to show node markers (default: False).
+    node_size : float
+        Size of node markers (default: 2.0).
+    node_color : str
+        Color for node markers (default: "#1f77b4").
+    point_set : PointSet | None
+        Additional points to overlay as small spheres.
+    point_size : float
+        Scale factor for point spheres (default: 1.0).
+    point_color : str
+        Color for point spheres (default: "#d62728").
     output_path : str | None
         If provided, saves the figure to an HTML file at this path.
     auto_open : bool
@@ -802,6 +944,11 @@ def plot_model(
         Figure height in pixels (default: 900).
     show_axes : bool
         If True, shows all axes, grid, and background (default: True).
+
+    Returns
+    -------
+    go.Figure
+        Plotly figure with combined visualization.
     """
 
     logger = logging.getLogger(__name__)
@@ -1019,7 +1166,7 @@ def plot_model(
             ]
 
             fig = go.Figure(data=traces, frames=frames)
-            apply_layout(fig, title=title or "Model")
+            apply_layout(fig, title=title)
             fig.update_layout(
                 sliders=sliders,
                 updatemenus=updatemenus,
@@ -1131,7 +1278,7 @@ def plot_model(
             traces.insert(1, endcap_mesh)
 
     fig = go.Figure(data=traces)
-    apply_layout(fig, title=title or "Model")
+    apply_layout(fig, title=title)
     fig.update_layout(width=width, height=height)
     if not show_axes:
         fig.update_layout(
@@ -1177,10 +1324,11 @@ def animate_frusta_timeseries(
     radius_scale: float = 1.0,
     fps: int = 30,
     stride: int = 1,
-    title: str | None = None,
+    title: str = "Animation",
     output_path: str | None = None,
     auto_open: bool = False,
-):
+    colorbar_title: str | None = None,
+) -> go.Figure:
     """Animate per-frustum values over time with interactive 3D controls.
 
     Creates a Plotly animation with play/pause controls, time slider, and full
@@ -1211,12 +1359,14 @@ def animate_frusta_timeseries(
         Frames per second for animation playback (default: 30).
     stride : int
         Temporal downsampling factor - use every `stride` time steps (default: 1).
-    title : str | None
-        Figure title. If None, defaults to "Frusta Animation".
+    title : str
+        Figure title (default: "Animation").
     output_path : str | None
         Path to save the HTML file. If None, defaults to "frusta_animation.html".
     auto_open : bool
         If True, automatically open the HTML file in the default browser when saving (default: False).
+    colorbar_title : str | None
+        Title for the colorbar. If None, defaults to "".
 
     Returns
     -------
@@ -1249,13 +1399,17 @@ def animate_frusta_timeseries(
     )
 
     # Apply stride to time domain and amplitudes
-    time_domain = np.asarray(time_domain)
-    amplitudes = np.asarray(amplitudes)
+    time_domain_arr = np.asarray(time_domain)
+    amplitudes_arr = np.asarray(amplitudes)
 
     if stride > 1:
-        time_domain = time_domain[::stride]
-        amplitudes = amplitudes[::stride]
-        logger.info("Applied stride=%d: reduced to %d frames", stride, len(time_domain))
+        time_domain_arr = time_domain_arr[::stride]
+        amplitudes_arr = amplitudes_arr[::stride]
+        logger.info(
+            "Applied stride=%d: reduced to %d frames",
+            stride,
+            len(time_domain_arr),
+        )
 
     # Scale frusta if needed
     fr = frusta if radius_scale == 1.0 else frusta.scaled(radius_scale)
@@ -1263,16 +1417,16 @@ def animate_frusta_timeseries(
     slices = list(fr.frustum_face_slices_map().values())
 
     # Validate dimensions
-    if len(amplitudes) == 0:
+    if len(amplitudes_arr) == 0:
         raise ValueError("amplitudes must have at least one time step")
-    if len(time_domain) != len(amplitudes):
+    if len(time_domain_arr) != len(amplitudes_arr):
         raise ValueError(
-            f"time_domain length ({len(time_domain)}) must match amplitudes "
-            f"time axis length ({len(amplitudes)})"
+            f"time_domain length ({len(time_domain_arr)}) must match "
+            f"amplitudes time axis length ({len(amplitudes_arr)})"
         )
-    T = len(amplitudes)
+    T = len(amplitudes_arr)
     N = fr.n_frusta
-    if any(len(vt) != N for vt in amplitudes):
+    if any(len(vt) != N for vt in amplitudes_arr):
         raise ValueError(
             f"each time step must have N values, matching frusta.n_frusta ({N})"
         )
@@ -1286,8 +1440,8 @@ def animate_frusta_timeseries(
 
     # Determine color limits
     if clim is None:
-        vmin = float(np.min(amplitudes))
-        vmax = float(np.max(amplitudes))
+        vmin = float(np.min(amplitudes_arr))
+        vmax = float(np.max(amplitudes_arr))
         cmin, cmax = vmin, vmax
     else:
         cmin, cmax = clim
@@ -1295,7 +1449,7 @@ def animate_frusta_timeseries(
     logger.info("Color limits: [%.3f, %.3f]", cmin, cmax)
 
     # Create initial mesh
-    intensity0 = faces_intensity(amplitudes[0])
+    intensity0 = faces_intensity(amplitudes_arr[0])
     mesh = go.Mesh3d(
         x=x,
         y=y,
@@ -1312,17 +1466,17 @@ def animate_frusta_timeseries(
         cmax=cmax,
         showscale=True,
         name="frusta",
-        colorbar=dict(title="Amplitude"),
+        colorbar=dict(title=colorbar_title),
     )
 
     # Create animation frames
     logger.info("Creating %d animation frames...", T)
     frames = []
-    for t, vt in enumerate(amplitudes):
+    for t, vt in enumerate(amplitudes_arr):
         intens = faces_intensity(vt)
         frames.append(
             go.Frame(
-                name=f"time={time_domain[t]:.3f}",
+                name=f"time={time_domain_arr[t]:.3f}",
                 data=[
                     go.Mesh3d(
                         x=x,
@@ -1349,10 +1503,10 @@ def animate_frusta_timeseries(
     frame_duration = int(1000 / max(1, fps))
     slider_steps = [
         {
-            "label": f"{time_domain[t]:.3f}",
+            "label": f"{time_domain_arr[t]:.3f}",
             "method": "animate",
             "args": [
-                [f"time={time_domain[t]:.3f}"],
+                [f"time={time_domain_arr[t]:.3f}"],
                 {
                     "mode": "immediate",
                     "frame": {"duration": 0},
@@ -1410,7 +1564,7 @@ def animate_frusta_timeseries(
 
     # Create figure
     fig = go.Figure(data=[mesh], frames=frames)
-    apply_layout(fig, title=title or "Frusta Animation")
+    apply_layout(fig, title=title)
     fig.update_layout(
         sliders=sliders,
         updatemenus=updatemenus,
@@ -1445,7 +1599,7 @@ def plot_points(
     color: str = "#ff7f0e",
     opacity: float = 1.0,
     size_scale: float = 1.0,
-    title: str | None = None,
+    title: str = "Point Set",
     width: int = 1200,
     height: int = 900,
 ) -> go.Figure:
@@ -1456,13 +1610,17 @@ def plot_points(
     point_set: PointSet
         Point set to visualize.
     color: str
-        Color for all spheres.
+        Color for all spheres (default: "#ff7f0e").
     opacity: float
-        Sphere opacity.
+        Sphere opacity (default: 1.0).
     size_scale: float
-        Uniform scale applied to sphere radii (1.0 = no change).
-    title: str | None
-        Figure title.
+        Uniform scale applied to sphere radii (1.0 = no change) (default: 1.0).
+    title: str
+        Figure title (default: "Point Set").
+    width: int
+        Figure width in pixels (default: 1200).
+    height: int
+        Figure height in pixels (default: 900).
 
     Returns
     -------
@@ -1487,7 +1645,7 @@ def plot_points(
     )
 
     fig = go.Figure(data=[mesh])
-    apply_layout(fig, title=title or "Point Set")
+    apply_layout(fig, title=title)
     fig.update_layout(width=width, height=height)
     logger.info(
         "plot_points count=%d size_scale=%s",
