@@ -469,6 +469,7 @@ def plot_frusta_with_centroid(
     centroid_line_width: float = 2.0,
     show_nodes: bool = False,
     node_size: float = 2.0,
+    node_color: str = "#1f77b4",
     title: str | None = None,
     width: int = 1200,
     height: int = 900,
@@ -498,7 +499,7 @@ def plot_frusta_with_centroid(
             y=yn,
             z=zn,
             mode="markers",
-            marker=dict(size=node_size, color="#ff7f0e"),
+            marker=dict(size=node_size, color=node_color),
             name="nodes",
         )
         traces.append(nodes)
@@ -767,6 +768,7 @@ def plot_model(
     centroid_line_width: float = 2.0,
     show_nodes: bool = False,
     node_size: float = 2.0,
+    node_color: str = "#1f77b4",
     # Extra points overlay (as low-res spheres)
     point_set: PointSet | None = None,
     point_size: float = 1.0,
@@ -776,7 +778,7 @@ def plot_model(
     auto_open: bool = False,
     width: int = 1200,
     height: int = 900,
-    hide_axes: bool = False,
+    show_axes: bool = True,
 ) -> go.Figure:
     """Master visualization combining centroid, frusta, slider, and overlay points.
 
@@ -798,8 +800,8 @@ def plot_model(
         Figure width in pixels (default: 1200).
     height : int
         Figure height in pixels (default: 900).
-    hide_axes : bool
-        If True, hides all axes, grid, and background to show only the model (default: False).
+    show_axes : bool
+        If True, shows all axes, grid, and background (default: True).
     """
 
     logger = logging.getLogger(__name__)
@@ -835,7 +837,7 @@ def plot_model(
                 y=yn,
                 z=zn,
                 mode="markers",
-                marker=dict(size=node_size, color="#ff7f0e"),
+                marker=dict(size=node_size, color=node_color),
                 name="nodes",
             )
             traces.append(nodes)
@@ -1024,7 +1026,7 @@ def plot_model(
                 width=width,
                 height=height,
             )
-            if hide_axes:
+            if not show_axes:
                 fig.update_layout(
                     scene=dict(
                         xaxis=dict(visible=False),
