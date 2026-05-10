@@ -1133,7 +1133,7 @@ def plot_model(
     fig = go.Figure(data=traces)
     apply_layout(fig, title=title or "Model")
     fig.update_layout(width=width, height=height)
-    if hide_axes:
+    if not show_axes:
         fig.update_layout(
             scene=dict(
                 xaxis=dict(visible=False),
