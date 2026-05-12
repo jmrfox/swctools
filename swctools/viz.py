@@ -1328,6 +1328,7 @@ def animate_frusta_timeseries(
     output_path: str | None = None,
     auto_open: bool = False,
     colorbar_title: str | None = None,
+    show_axes: bool = True,
 ) -> go.Figure:
     """Animate per-frustum values over time with interactive 3D controls.
 
@@ -1367,6 +1368,8 @@ def animate_frusta_timeseries(
         If True, automatically open the HTML file in the default browser when saving (default: False).
     colorbar_title : str | None
         Title for the colorbar. If None, defaults to "".
+    show_axes : bool
+        If True, shows all axes, grid, and background (default: True).
 
     Returns
     -------
@@ -1572,6 +1575,15 @@ def animate_frusta_timeseries(
         width=1200,
         height=900,
     )
+
+    if not show_axes:
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(visible=False),
+                yaxis=dict(visible=False),
+                zaxis=dict(visible=False),
+            )
+        )
 
     logger.info("Animation figure created with %d frames at %d fps", T, fps)
 
